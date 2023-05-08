@@ -1,0 +1,11 @@
+# Ignore all #
+*
+# Unignore all with extensions #
+!*.*
+# Unignore all dirs #
+!*/
+
+# All other unneeded files go here! #
+*.exe
+*.out
+*.pdf
