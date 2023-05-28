@@ -1,0 +1,16 @@
+The reason why the data is different is due to new characters being added,
+in particular, \r \n are added in certain places. Thus the data representations
+of these files are different. (Not to mention the difference in file sizes!)
+
+This can be seen by running:
+od -c hello-unix
+od -c hello-windows
+
+to compare the data in char format.
+
+Windows appends each newline with a \r (carriage return)
+and a \n (newline) b/c of the devices it was meant to be
+used for, typewriters! (Source: Ryan Auge, Best TA)
+
+Naturally, sh doesn't understand this syntax and throws
+a syntax error.
