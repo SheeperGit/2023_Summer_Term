@@ -19,5 +19,12 @@ public class hello_java {
 		
 		double d = p1.distance(p2);
 		System.out.println(d);
+		
+		int [][] M = new int[2][3]; // 2 rows, 3 cols.
+		M[0][1] = 7;
+		//...
+		int[][] M2 = new int[][]{ {1, 2, 3},
+								  {4, 5, 6}
+					   			  };
 	}
 }

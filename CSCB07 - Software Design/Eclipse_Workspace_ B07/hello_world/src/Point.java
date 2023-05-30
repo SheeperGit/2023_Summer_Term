@@ -23,4 +23,13 @@ public class Point {
 	public double distance(Point q) {
 		return Math.sqrt(Math.pow(x - q.x, 2) + Math.pow(y - q.y, 2));
 	}
+	
+	public void foo() {
+		this.x = 5;
+		this.y = 6;
+	}
+	
+	public void bar(){
+		
+	}
 }
