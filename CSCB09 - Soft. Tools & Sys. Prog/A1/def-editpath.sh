@@ -26,7 +26,7 @@ editpath() {
     ## Shift according to the # of opts. ##
     shift $(($OPTIND - 1))
 
-    ## "--" Check ##
+    ## '--' Check ##
     separator_index=-1
     i=1
     for arg in "$@"; do
@@ -48,6 +48,8 @@ editpath() {
     case $action in
         "append")
             for path in "$paths"; do
+                find=" /"
+                replace=":/"
                 PATH="${PATH}${delimiter}${path}"
             done
             ;;
