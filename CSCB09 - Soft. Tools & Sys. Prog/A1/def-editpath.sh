@@ -29,8 +29,8 @@ editpath() {
     ## '--' Check ##
     separator_index=-1
     i=1
-    for arg in "$@"; do
-        if [ "$arg" = "--" ]; then
+    for arg in $@; do
+        if [ $arg = "--" ]; then
             separator_index=$i
             break
         fi
@@ -39,9 +39,9 @@ editpath() {
 
     ## Separate opts and paths ##
     if [ $separator_index -ne -1 ]; then
-        paths="${@:$((separator_index + 1))}"
+        paths=${@:$((separator_index + 1))}
     else
-        paths="$@"
+        paths=$@
     fi
 
     echo path=${paths}
@@ -51,7 +51,7 @@ editpath() {
     case $action in
         "append")
             for path in "$paths"; do
-                PATH="${PATH}${delim}${path}"
+                PATH=$PATH:$path
             done
             ;;
         "prepend")
