@@ -51,8 +51,6 @@ editpath() {
     case $action in
         "append")
             for path in "$paths"; do
-                find=" /"
-                replace=":/"
                 PATH="${PATH}${delim}${path}"
             done
             ;;
