@@ -3,7 +3,7 @@
 editpath() {
     action=""
     paths=""
-    delimiter=":"
+    delim=":"
 
     while getopts ":apd" opt; do
         case $opt in
@@ -44,23 +44,26 @@ editpath() {
         paths="$@"
     fi
 
+    echo path=${paths}
+    echo args:$(./print-args.sh ${paths})
+
     ## Perform action on PATH ##
     case $action in
         "append")
             for path in "$paths"; do
                 find=" /"
                 replace=":/"
-                PATH="${PATH}${delimiter}${path}"
+                PATH="${PATH}${delim}${path}"
             done
             ;;
         "prepend")
             for path in "$paths"; do
-                PATH="${path}${delimiter}${PATH}"
+                PATH="${path}${delim}${PATH}"
             done
             ;;
         "delete")
             for path in "$paths"; do
-                PATH=$(echo "$PATH" | tr $delimiter '\n' | grep -vFx "$path" | tr '\n' $delimiter)
+                PATH=$(echo "$PATH" | tr $delim '\n' | grep -vFx "$path" | tr '\n' $delim)
             done
             ;;
         *) # Unknown Action - Exit Code (2)

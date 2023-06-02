@@ -13,7 +13,7 @@ fi
 mkdir "$2"
 for i in "$1"/* ; do
     firstlvl=$(basename "$i")
-    for j in "$i"/* ; do  
+    for j in "$i"/* ; do
         secondlvl=$(basename "$j")
         mkdir "$2/${secondlvl}/"
         mkdir "$2/${secondlvl}/${firstlvl}"
