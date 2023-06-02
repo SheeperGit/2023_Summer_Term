@@ -44,19 +44,20 @@ editpath() {
         paths=$@
     fi
 
-    echo path=${paths}
-    echo args:$(./print-args.sh ${paths})
+    # echo args:   $(./print-args.sh "$@")
+    # paths=$(echo $paths | tr \' \")
+    # echo args:   $(./print-args.sh "$@")
 
     ## Perform action on PATH ##
     case $action in
         "append")
-            for path in "$paths"; do
-                PATH=$PATH:$path
+            for path in "$@"; do
+                PATH=${PATH}:${path}
             done
             ;;
         "prepend")
-            for path in "$paths"; do
-                PATH="${path}${delim}${PATH}"
+            for path in "$@"; do
+                PATH=${path}:${PATH}
             done
             ;;
         "delete")

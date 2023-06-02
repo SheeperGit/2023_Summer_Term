@@ -1,16 +1,12 @@
+#!/bin/sh
+
 . ./def-editpath.sh
 PATH=/bin:/usr/bin:/usr/local/bin
 editpath -a '/xxx   yyy' /opt/bin .
 /usr/bin/printenv PATH
 
-/bin:/usr/bin:/usr/local/bin:/xxx   yyy:/opt/bin:.
-
 editpath -p 'Job$' '/M' x
 /usr/bin/printenv PATH
 
-x:/M:Job$:/bin:/usr/bin:/usr/local/bin:/xxx   yyy:/opt/bin:.
-
 editpath -d . 'Job$' usr
 /usr/bin/printenv PATH
-
-x:/M:/bin:/usr/bin:/usr/local/bin:/xxx   yyy:/opt/bin
