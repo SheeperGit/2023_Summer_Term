@@ -3,7 +3,6 @@
 editpath() {
     action=""
     paths=""
-    delim=":"
 
     while getopts ":apd" opt; do
         case $opt in
@@ -23,30 +22,10 @@ editpath() {
         esac
     done
 
+    #echo "\n" Past args:"  " $(./print-args.sh "$@") "\n"
     ## Shift according to the # of opts. ##
     shift $(($OPTIND - 1))
-
-    ## '--' Check ##
-    separator_index=-1
-    i=1
-    for arg in $@; do
-        if [ $arg = "--" ]; then
-            separator_index=$i
-            break
-        fi
-        i=$((i + 1))
-    done
-
-    ## Separate opts and paths ##
-    if [ $separator_index -ne -1 ]; then
-        paths=${@:$((separator_index + 1))}
-    else
-        paths=$@
-    fi
-
-    # echo args:   $(./print-args.sh "$@")
-    # paths=$(echo $paths | tr \' \")
-    # echo args:   $(./print-args.sh "$@")
+    #echo After shift:    $(./print-args.sh "$@") "\n"
 
     ## Perform action on PATH ##
     case $action in
@@ -61,8 +40,9 @@ editpath() {
             done
             ;;
         "delete")
-            for path in "$paths"; do
-                PATH=$(echo "$PATH" | tr $delim '\n' | grep -vFx "$path" | tr '\n' $delim)
+            for pattern in "$@"; do
+                # Use grep to search for the pattern in PATH
+                PATH=$(echo "$PATH" |sed "s/$pattern//g")
             done
             ;;
         *) # Unknown Action - Exit Code (2)
