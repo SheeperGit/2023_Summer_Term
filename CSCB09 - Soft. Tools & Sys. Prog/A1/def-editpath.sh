@@ -41,8 +41,8 @@ editpath() {
             ;;
         "delete")
             for pattern in "$@"; do
-                # Use grep to search for the pattern in PATH
-                PATH=$(echo "$PATH" |sed "s/$pattern//g")
+                ## Use grep to search for the pattern in PATH ##
+                PATH=$(echo "$PATH" | grep -v "$pattern")
             done
             ;;
         *) # Unknown Action - Exit Code (2)
