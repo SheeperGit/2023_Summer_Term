@@ -16,16 +16,14 @@ editpath() {
                 action="delete"
                 ;;
             \?) # Unknown Option - Exit Code (1)
-                echo "Invalid option: -$OPTARG" >&2
+                echo "Invalid option: -$OPTARG" 2>
                 return 1
                 ;;
         esac
     done
 
-    #echo "\n" Past args:"  " $(./print-args.sh "$@") "\n"
     ## Shift according to the # of opts. ##
     shift $(($OPTIND - 1))
-    #echo After shift:    $(./print-args.sh "$@") "\n"
 
     ## Perform action on PATH ##
     case $action in
@@ -46,7 +44,7 @@ editpath() {
             done
             ;;
         *) # Unknown Action - Exit Code (2)
-            echo "Invalid action: $action" >&2
+            echo "Invalid action: $action" 2>
             return 2
             ;;
     esac

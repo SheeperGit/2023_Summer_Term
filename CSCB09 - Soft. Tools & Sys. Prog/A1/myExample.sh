@@ -1,16 +1,16 @@
 #!/bin/sh
 
 . ./def-editpath.sh
-PATH=/bin:/usr/bin:/usr/local/bin
-editpath -a -- -a
+editpath -a /cumstain /eat /poop/smoke
 /usr/bin/printenv PATH
 
-editpath -p -- -p
+editpath -p '/my    my ' /where/is/semen
 /usr/bin/printenv PATH
 
-editpath -a -- -p
+editpath -a -- -d GOD/JESUS/LOVE
 /usr/bin/printenv PATH
 
-editpath -p -- -a
+editpath -p "/peepee     "
 /usr/bin/printenv PATH
 
+editpath -d /where/is/semen /cumstain /eat /randombullshit
