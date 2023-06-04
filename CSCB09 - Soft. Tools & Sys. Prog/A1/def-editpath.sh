@@ -16,7 +16,7 @@ editpath() {
                 action="delete"
                 ;;
             \?) # Unknown Option - Exit Code (1)
-                echo "Invalid option: -$OPTARG" 2>
+                echo "Invalid option: -$OPTARG" >&2
                 return 1
                 ;;
         esac
@@ -44,7 +44,7 @@ editpath() {
             done
             ;;
         *) # Unknown Action - Exit Code (2)
-            echo "Invalid action: $action" 2>
+            echo "Invalid action: $action" >&2
             return 2
             ;;
     esac
