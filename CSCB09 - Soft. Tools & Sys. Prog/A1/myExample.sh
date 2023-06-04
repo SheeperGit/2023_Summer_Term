@@ -14,3 +14,4 @@ editpath -p "/peepee     "
 /usr/bin/printenv PATH
 
 editpath -d /where/is/semen /cumstain /eat /randombullshit
+/usr/bin/printenv PATH

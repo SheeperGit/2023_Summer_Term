@@ -5,7 +5,7 @@ editpath() {
     paths=""
 
     while getopts ":apd" opt; do
-        case $opt in
+        case "$opt" in
             a)
                 action="append"
                 ;;
@@ -15,7 +15,7 @@ editpath() {
             d)
                 action="delete"
                 ;;
-            \?) # Unknown Option - Exit Code (1)
+            *) # Unknown Option - Exit Code (1)
                 echo "Invalid option: -$OPTARG" >&2
                 return 1
                 ;;
@@ -40,7 +40,8 @@ editpath() {
         "delete")
             for pattern in "$@"; do
                 ## Use grep to search for the pattern in PATH ##
-                PATH=$(echo "$PATH" | grep -v "$pattern")
+        # Forward PATH's contents    # Replace ':' w/ '\n'  # Look at every line to del   # Place back ':'       # Look for ':' at the end of PATH and replace w/ ''      
+                PATH=$(echo "$PATH" | /usr/bin/tr ':' '\n' | /usr/bin/grep -v "$pattern" | /usr/bin/tr '\n' ':' | /usr/bin/sed 's/:$//')
             done
             ;;
         *) # Unknown Action - Exit Code (2)
