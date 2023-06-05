@@ -40,7 +40,7 @@ editpath() {
         "delete")
             for pattern in "$@"; do
                 ## Use grep to search for the pattern in PATH ##
-        # Forward PATH's contents    # Replace ':' w/ '\n'  # Output lines w/ EXACT MATCHES # Place back ':'       # Look for ':' at the end of PATH and replace w/ ''      
+        # Forward PATH's contents    # Replace ':' w/ '\n'  # Del lines w/ EXACT MATCHES    # Place back ':'       # Look for ':' at the end of PATH and replace w/ ''      
                 PATH=$(echo "$PATH" | /usr/bin/tr ':' '\n' | /usr/bin/grep -vxF "$pattern" | /usr/bin/tr '\n' ':' | /usr/bin/sed 's/:$//')
             done
             ;;
