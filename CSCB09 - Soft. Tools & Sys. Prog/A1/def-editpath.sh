@@ -1,8 +1,13 @@
 #!/bin/sh
 
 editpath() {
+    ## No args - Exit Code (1) ##
+    if [ $# = 0 ] ; then
+        echo No args given! >&2
+        return 1
+    fi
+
     action=""
-    paths=""
 
     while getopts ":apd" opt; do
         case "$opt" in
@@ -15,9 +20,8 @@ editpath() {
             d)
                 action="delete"
                 ;;
-            *) # Unknown Option - Exit Code (1)
-                echo "Invalid option: -$OPTARG" >&2
-                return 1
+            *) # Unknown Option - If last arg, then Exit Code (2)
+                action="-$OPTARG"
                 ;;
         esac
     done
@@ -44,9 +48,8 @@ editpath() {
                 PATH=$(echo "$PATH" | /usr/bin/tr ':' '\n' | /usr/bin/grep -vxF "$pattern" | /usr/bin/tr '\n' ':' | /usr/bin/sed 's/:$//')
             done
             ;;
-        *) # Unknown Action - Exit Code (2)
+        *) # Unknown Action - Do nothing
             echo "Invalid action: $action" >&2
-            return 2
             ;;
     esac
 

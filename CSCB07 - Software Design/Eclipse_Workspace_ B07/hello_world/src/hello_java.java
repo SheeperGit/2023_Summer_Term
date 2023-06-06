@@ -24,16 +24,16 @@ public class hello_java {
 //		}
 //		
 		
-//		File f = new File("/home/sean_the_sheep/Desktop/University/2023_Summer_Term/CSCB07 - Software Design/Eclipse_Workspace_ B07/hello_world/src");
-//		System.out.println(f.exists());
-//		System.out.println(f.isDirectory());
-//		
-//		if (f.isDirectory()) {
-//			File[] files = f.listFiles();
-//			for (File x:files) {
-//				System.out.println(x.getName() + ", " + x.isDirectory());
-//			}
-//		}
+		File f = new File("/home/sean_the_sheep/Desktop/University/2023_Summer_Term/CSCB07 - Software Design/Eclipse_Workspace_ B07/hello_world/src");
+		System.out.println(f.exists());
+		System.out.println(f.isDirectory());
+		
+		if (f.isDirectory()) {
+			File[] files = f.listFiles();
+			for (File x:files) {
+				System.out.println(x.getName() + ", " + x.isDirectory());
+			}
+		}
 //		Scanner scan = new Scanner(System.in);
 //		
 //		System.out.println("Enter an int: ");
