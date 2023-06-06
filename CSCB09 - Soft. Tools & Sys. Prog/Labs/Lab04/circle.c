@@ -51,7 +51,7 @@ void print_cartesian(cartesian *c) {
  */
 polar *circle_samples(double r, int n)
 {
-  polar *points = malloc(sizeof(polar));
+  polar *points = malloc(n * sizeof(polar));
   int i;
 
   for (i = 0; i < n; i++) {
@@ -64,18 +64,19 @@ polar *circle_samples(double r, int n)
 
 int main(void)
 {
-  polar *polars;
-  cartesian *cart;
+  cartesian *cart = malloc(sizeof(cartesian));
   int n, i;
 
   n = 5;
+  polar *polars = malloc(n * sizeof(polar));
   /* Get n points on the unit circle.  Print their cartesian coordinates. */
   polars = circle_samples(1, n);
   for (i = 0; i < n; i++) {
     cart = polar_to_cartesian(&polars[i]);
     print_cartesian(cart);
+    free(cart);
   }
-  free(cart);
+  free(polars);
 
   return 0;
 }
