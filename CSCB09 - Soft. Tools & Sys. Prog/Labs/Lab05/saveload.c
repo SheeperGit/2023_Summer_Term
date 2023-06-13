@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "point.h"
-#include <sys/types.h>
 
 ssize_t save_point_array(const char *pathname, size_t n, const point *a){
   FILE *f;
