@@ -46,7 +46,7 @@ class Lab3Tests {
 	void testHashCode() throws Exception{
 		RationalNumber r1 = new RationalNumber(1,2);
 		RationalNumber r2 = new RationalNumber(2,4);
-		System.out.println(r1.hashCode() + r2.hashCode());//
+		System.out.println(r1.hashCode() + r2.hashCode());
 		assertEquals(r1.hashCode(), r2.hashCode());
 	}
 	

@@ -42,20 +42,20 @@ public class ComplexNumber extends SpecialNumber implements Comparable<ComplexNu
 	public boolean equals(Object obj) {
 		if (obj == null || !(obj instanceof ComplexNumber)) return false;
 		
-		ComplexNumber cn2 = (ComplexNumber)obj;
-		return (Double.compare(this.real, cn2.real) == 0) && (Double.compare(this.imaginary, cn2.imaginary) == 0);
+		ComplexNumber cn2 = (ComplexNumber) obj;
+	    return Double.compare(real, cn2.real) == 0 && Double.compare(imaginary, cn2.imaginary) == 0;
 	}
 	
 	@Override
 	public int hashCode() {
-//		double res = 3;
-//		int n = 41;
-//        res = n * res + this.real;
-//        res = n * res + this.imaginary;
-//        return (int)res;
-		
-		int res = (int)Math.sqrt(this.real * this.real + this.imaginary * this.imaginary);
-		
-		return res;
+		int reHash = Double.hashCode(real);
+	    int imHash = Double.hashCode(imaginary);
+
+	    int result = 17;
+	    int p = 173;
+	    result = p * result + reHash;
+	    result = p * result + imHash;
+
+	    return result;
 	}
 }
