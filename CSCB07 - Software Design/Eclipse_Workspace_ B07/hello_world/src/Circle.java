@@ -1,5 +1,5 @@
 
-public class Circle extends Shape {
+public class Circle extends Shape implements Comparable<Rectangle> {
 	int x;
 	int y;
 	int center;
@@ -57,5 +57,11 @@ public class Circle extends Shape {
 	@Override
 	public String toString() {
 		return "(" + x + ", " + y + ")";
+	}
+	
+	@Override
+	public int compareTo(Rectangle r) {
+		
+		
 	}
 }

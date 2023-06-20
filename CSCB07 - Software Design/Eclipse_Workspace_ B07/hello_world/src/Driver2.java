@@ -1,3 +1,4 @@
+package default package;
 import java.util.ArrayList;
 
 
@@ -17,5 +18,10 @@ public class Driver2 {
 		}
 		
 		ArrayList<Circle> cList = new ArrayList<Circle>();
+		
+		Rectangle r1 = new Rectangle(1, 2);
+		Rectangle r2 = new Rectangle(3, 4);
+		Rectangle r3 = new Rectangle(5, 6);
+		Rectangle r4 = new Rectangle(7, 8);
 	}
 }
