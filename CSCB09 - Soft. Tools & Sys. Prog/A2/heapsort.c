@@ -9,21 +9,21 @@ void heapify_at_v(FILE *f, int n, int i) {
     int left_index = (2 * i) + 1;
     int right_index = (2 * i) + 2;
 
-    // Read the records at the given indices. //
+    // Read the records at given indices. //
     customer curCust, largestCust;
     fseek(f, i * sizeof(customer), SEEK_SET);
     fread(&curCust, sizeof(customer), 1, f);
 
-    // Truncate the name if it exceeds 44 characters
-    if (strlen(curCust.name) > CUSTOMER_NAME_MAX) curCust.name[CUSTOMER_NAME_MAX] = '\0';
+    // Truncate name if it exceeds CUSTOMER_NAME_MAX characters //
+    if (strlen(curCust.name) > CUSTOMER_NAME_MAX) 
+        curCust.name[CUSTOMER_NAME_MAX] = '\0';
 
     fseek(f, largest * sizeof(customer), SEEK_SET);
     fread(&largestCust, sizeof(customer), 1, f);
 
-    // Truncate the name if it exceeds 44 characters
-    if (strlen(largestCust.name) > CUSTOMER_NAME_MAX) largestCust.name[CUSTOMER_NAME_MAX] = '\0';
-
-    //printf("Stuff= %s:%u\t%s:%u\n", current.name, current.loyalty, largestCustomer.name, largestCustomer.loyalty);
+    // Truncate name if it exceeds CUSTOMER_NAME_MAX characters //
+    if (strlen(largestCust.name) > CUSTOMER_NAME_MAX) 
+        largestCust.name[CUSTOMER_NAME_MAX] = '\0';
 
     // Compare loyalty, and if same: sort alphabetically! // 
     if (left_index < n) {
@@ -31,15 +31,14 @@ void heapify_at_v(FILE *f, int n, int i) {
         fseek(f, left_index * sizeof(customer), SEEK_SET);
         fread(&leftCust, sizeof(customer), 1, f);
 
-        if (strlen(leftCust.name) > CUSTOMER_NAME_MAX) leftCust.name[CUSTOMER_NAME_MAX] = '\0';
+        if (strlen(leftCust.name) > CUSTOMER_NAME_MAX) 
+            leftCust.name[CUSTOMER_NAME_MAX] = '\0';
 
         if (leftCust.loyalty > largestCust.loyalty || 
-            (leftCust.loyalty == largestCust.loyalty && strcmp(leftCust.name, largestCust.name) < 0))
+            (leftCust.loyalty == largestCust.loyalty && strcmp(leftCust.name, largestCust.name) > 0))
         {
             largest = left_index;
-            //printf("BfLeft= %s:%u\n", largestCustomer.name, largestCustomer.loyalty);
             largestCust = leftCust;
-            //printf("BfLeft= %s:%u\n", leftCustomer.name, leftCustomer.loyalty);
         }
     }
 
@@ -48,21 +47,20 @@ void heapify_at_v(FILE *f, int n, int i) {
         fseek(f, right_index * sizeof(customer), SEEK_SET);
         fread(&rightCust, sizeof(customer), 1, f);
 
-        if (strlen(rightCust.name) > CUSTOMER_NAME_MAX) rightCust.name[CUSTOMER_NAME_MAX] = '\0';
+        if (strlen(rightCust.name) > CUSTOMER_NAME_MAX) 
+            rightCust.name[CUSTOMER_NAME_MAX] = '\0';
 
         if (rightCust.loyalty > largestCust.loyalty ||
-            (rightCust.loyalty == largestCust.loyalty && strcmp(rightCust.name, largestCust.name) < 0))
+            (rightCust.loyalty == largestCust.loyalty && strcmp(rightCust.name, largestCust.name) > 0))
         {
             largest = right_index;
-            printf("BfRight= %s:%u\n", largestCust.name, largestCust.loyalty);
             largestCust = rightCust;
-            printf("BfRight= %s:%u\n", rightCust.name, rightCust.loyalty);
         }
     }
 
-    // Swap records if necessary //
+    // Swap records (if necessary) //
     if (largest != i) {
-        // Write the records at the given indices
+        // Write records at given indices //
         fseek(f, i * sizeof(customer), SEEK_SET);
         fwrite(&largestCust, sizeof(customer), 1, f);
         fseek(f, largest * sizeof(customer), SEEK_SET);
@@ -90,6 +88,7 @@ int heapsort(const char *filename) {
 
     // Heapsort //
     for (int i = numRecords - 1; i > 0; i--) {
+
         // Swap root (max element) with the last record //
         fseek(f, 0, SEEK_SET);
         customer root;
@@ -105,7 +104,7 @@ int heapsort(const char *filename) {
         fseek(f, 0, SEEK_SET);
         fwrite(&last, sizeof(customer), 1, f);
 
-        // Reduce heap size and heapify the root //
+        // Reduce heap size and heapify root //
         heapify_at_v(f, i, 0);
     }
 
@@ -114,7 +113,7 @@ int heapsort(const char *filename) {
 }
 
 int main(void){
-    const char *myfilename = "sample.dat";
+    const char *myfilename = "outputsample.dat";
     int final = heapsort(myfilename);
     if (final)
         printf("Sorting completed successfully.\n");
@@ -136,8 +135,10 @@ int main(void){
         customer current;
         fread(&current, sizeof(customer), 1, f);
 
-        // Truncate the name if it exceeds 44 characters
-        if (strlen(current.name) > CUSTOMER_NAME_MAX) current.name[CUSTOMER_NAME_MAX] = '\0';
+        // Truncate name if it exceeds CUSTOMER_NAME_MAX characters //
+        if (strlen(current.name) > CUSTOMER_NAME_MAX) 
+            current.name[CUSTOMER_NAME_MAX] = '\0';
+
         printf("Name: %s\tLoyalty: %u\n", current.name, current.loyalty);
     }
 
