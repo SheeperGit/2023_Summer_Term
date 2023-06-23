@@ -15,15 +15,17 @@ void heapify_at_v(FILE *f, int n, int i) {
     fread(&curCust, sizeof(customer), 1, f);
 
     // Truncate name if it exceeds CUSTOMER_NAME_MAX characters //
-    if (strlen(curCust.name) > CUSTOMER_NAME_MAX) 
+    if (strlen(curCust.name) > CUSTOMER_NAME_MAX) {
         curCust.name[CUSTOMER_NAME_MAX] = '\0';
+    }
 
     fseek(f, largest * sizeof(customer), SEEK_SET);
     fread(&largestCust, sizeof(customer), 1, f);
 
     // Truncate name if it exceeds CUSTOMER_NAME_MAX characters //
-    if (strlen(largestCust.name) > CUSTOMER_NAME_MAX) 
+    if (strlen(largestCust.name) > CUSTOMER_NAME_MAX) {
         largestCust.name[CUSTOMER_NAME_MAX] = '\0';
+    }
 
     // Compare loyalty, and if same: sort alphabetically! // 
     if (left_index < n) {
@@ -31,8 +33,9 @@ void heapify_at_v(FILE *f, int n, int i) {
         fseek(f, left_index * sizeof(customer), SEEK_SET);
         fread(&leftCust, sizeof(customer), 1, f);
 
-        if (strlen(leftCust.name) > CUSTOMER_NAME_MAX) 
+        if (strlen(leftCust.name) > CUSTOMER_NAME_MAX) {
             leftCust.name[CUSTOMER_NAME_MAX] = '\0';
+        }
 
         if (leftCust.loyalty > largestCust.loyalty || 
             (leftCust.loyalty == largestCust.loyalty && strcmp(leftCust.name, largestCust.name) > 0))
@@ -47,9 +50,10 @@ void heapify_at_v(FILE *f, int n, int i) {
         fseek(f, right_index * sizeof(customer), SEEK_SET);
         fread(&rightCust, sizeof(customer), 1, f);
 
-        if (strlen(rightCust.name) > CUSTOMER_NAME_MAX) 
+        if (strlen(rightCust.name) > CUSTOMER_NAME_MAX) {
             rightCust.name[CUSTOMER_NAME_MAX] = '\0';
-
+        }
+            
         if (rightCust.loyalty > largestCust.loyalty ||
             (rightCust.loyalty == largestCust.loyalty && strcmp(rightCust.name, largestCust.name) > 0))
         {
@@ -128,7 +132,8 @@ int main(void){
 
     fseek(f, 0, SEEK_END);
     int numRecords = ftell(f) / sizeof(customer);
-    // Print the sorted records
+
+    // Print the sorted records //
     fseek(f, 0, SEEK_SET);
     printf("Sorted records:\n");
     for (int i = 0; i < numRecords; i++) {
@@ -136,8 +141,9 @@ int main(void){
         fread(&current, sizeof(customer), 1, f);
 
         // Truncate name if it exceeds CUSTOMER_NAME_MAX characters //
-        if (strlen(current.name) > CUSTOMER_NAME_MAX) 
+        if (strlen(current.name) > CUSTOMER_NAME_MAX) {
             current.name[CUSTOMER_NAME_MAX] = '\0';
+        }
 
         printf("Name: %s\tLoyalty: %u\n", current.name, current.loyalty);
     }
