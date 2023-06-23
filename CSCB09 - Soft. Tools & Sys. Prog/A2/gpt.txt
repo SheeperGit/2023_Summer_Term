@@ -1,0 +1,30 @@
+In this assignment, you will use fread(), fwrite(), and fseek() to implement operations on fixed-length records in a binary data file.
+
+In short, implement the Heapsort algorithm, except using random access (fseek()) on a file instead of an in-memory array!
+
+I strongly encourage you to write a helper function for “heapify at v”.
+
+The file is a binary file of 0 or more customer records, each record matching the C struct customer in customer.h. The size conspires to be 48 bytes on the platform we use.
+
+Of note is that customer name is not always a NUL-terminated C string. If the name is short, it is true that the remainder of the array is filled with NUL, but this is only for best practice in privacy. The longest name can really have length CUSTOMER_NAME_MAX, in which case there is no NUL right after.
+
+And easy way find out the number of records in the file is: fseek() to the end, then ftell(), divide by sizeof(customer).
+
+We want to sort the customer records by loyalty points in increasing order; among customers with the same loyalty points, sort by names in alphabetical order. It is also possible for multiple records to have the same loyalty points and the same name; then none of them should be dropped.
+
+A sample file sample.dat is provided, but only to the point of exemplifying the file format.
+
+Here are the customers in the sample file:
+name 	loyalty
+Dennis Ritchie 	1926
+Charles Anthony Richard Hoare 	71934
+The Boy Who Lived And Defeated The Dark Lord 	305419896
+Alan Turing 	305419896
+
+Further Specifications
+
+The sorting function (the function you must make) is to be:
+
+int heapsort(const char *filename);
+
+It should return 0 if there is an error, 1 otherwise.
