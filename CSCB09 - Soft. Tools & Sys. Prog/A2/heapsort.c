@@ -4,67 +4,69 @@
 #include <stdlib.h>
 #include <string.h>
 
-void heapify_at_v(FILE *f, int n, int index) {
-    int largest = index;
-    int left = 2 * index + 1;
-    int right = 2 * index + 2;
+void heapify_at_v(FILE *f, int n, int i) {
+    int largest = i;
+    int left_index = (2 * i) + 1;
+    int right_index = (2 * i) + 2;
 
     // Read the records at the given indices. //
-    customer current, largestCustomer;
-    fseek(f, index * sizeof(customer), SEEK_SET);
-    fread(&current, sizeof(customer), 1, f);
+    customer curCust, largestCust;
+    fseek(f, i * sizeof(customer), SEEK_SET);
+    fread(&curCust, sizeof(customer), 1, f);
 
     // Truncate the name if it exceeds 44 characters
-    if (strlen(current.name) > CUSTOMER_NAME_MAX) {
-        current.name[CUSTOMER_NAME_MAX] = '\0';
-    }
+    if (strlen(curCust.name) > CUSTOMER_NAME_MAX) curCust.name[CUSTOMER_NAME_MAX] = '\0';
 
     fseek(f, largest * sizeof(customer), SEEK_SET);
-    fread(&largestCustomer, sizeof(customer), 1, f);
+    fread(&largestCust, sizeof(customer), 1, f);
 
     // Truncate the name if it exceeds 44 characters
-    if (strlen(largestCustomer.name) > CUSTOMER_NAME_MAX) {
-        largestCustomer.name[CUSTOMER_NAME_MAX] = '\0';
-    }
+    if (strlen(largestCust.name) > CUSTOMER_NAME_MAX) largestCust.name[CUSTOMER_NAME_MAX] = '\0';
 
     //printf("Stuff= %s:%u\t%s:%u\n", current.name, current.loyalty, largestCustomer.name, largestCustomer.loyalty);
 
     // Compare loyalty, and if same: sort alphabetically! // 
-    if (left < n) {
-        customer leftCustomer;
-        fseek(f, left * sizeof(customer), SEEK_SET);
-        fread(&leftCustomer, sizeof(customer), 1, f);
-        if (leftCustomer.loyalty > largestCustomer.loyalty || 
-            (leftCustomer.loyalty == largestCustomer.loyalty && strcmp(leftCustomer.name, largestCustomer.name) < 0))
+    if (left_index < n) {
+        customer leftCust;
+        fseek(f, left_index * sizeof(customer), SEEK_SET);
+        fread(&leftCust, sizeof(customer), 1, f);
+
+        if (strlen(leftCust.name) > CUSTOMER_NAME_MAX) leftCust.name[CUSTOMER_NAME_MAX] = '\0';
+
+        if (leftCust.loyalty > largestCust.loyalty || 
+            (leftCust.loyalty == largestCust.loyalty && strcmp(leftCust.name, largestCust.name) < 0))
         {
-            largest = left;
+            largest = left_index;
             //printf("BfLeft= %s:%u\n", largestCustomer.name, largestCustomer.loyalty);
-            largestCustomer = leftCustomer;
+            largestCust = leftCust;
             //printf("BfLeft= %s:%u\n", leftCustomer.name, leftCustomer.loyalty);
         }
     }
 
-    if (right < n) {
-        customer rightCustomer;
-        fseek(f, right * sizeof(customer), SEEK_SET);
-        fread(&rightCustomer, sizeof(customer), 1, f);
-        if (rightCustomer.loyalty > largestCustomer.loyalty ||
-            (rightCustomer.loyalty == largestCustomer.loyalty && strcmp(rightCustomer.name, largestCustomer.name) < 0))
+    if (right_index < n) {
+        customer rightCust;
+        fseek(f, right_index * sizeof(customer), SEEK_SET);
+        fread(&rightCust, sizeof(customer), 1, f);
+
+        if (strlen(rightCust.name) > CUSTOMER_NAME_MAX) rightCust.name[CUSTOMER_NAME_MAX] = '\0';
+
+        if (rightCust.loyalty > largestCust.loyalty ||
+            (rightCust.loyalty == largestCust.loyalty && strcmp(rightCust.name, largestCust.name) < 0))
         {
-            largest = right;
-            printf("BfRight= %s:%u\n", largestCustomer.name, largestCustomer.loyalty);
-            largestCustomer = rightCustomer;
-            printf("BfRight= %s:%u\n", rightCustomer.name, rightCustomer.loyalty);
+            largest = right_index;
+            printf("BfRight= %s:%u\n", largestCust.name, largestCust.loyalty);
+            largestCust = rightCust;
+            printf("BfRight= %s:%u\n", rightCust.name, rightCust.loyalty);
         }
     }
 
     // Swap records if necessary //
-    if (largest != index) {
+    if (largest != i) {
         // Write the records at the given indices
-        fseek(f, index * sizeof(customer), SEEK_SET);
-        fwrite(&largestCustomer, sizeof(customer), 1, f);
+        fseek(f, i * sizeof(customer), SEEK_SET);
+        fwrite(&largestCust, sizeof(customer), 1, f);
         fseek(f, largest * sizeof(customer), SEEK_SET);
-        fwrite(&current, sizeof(customer), 1, f);
+        fwrite(&curCust, sizeof(customer), 1, f);
 
         // Recursively heapify the affected subtree //
         heapify_at_v(f, n, largest);
@@ -133,11 +135,10 @@ int main(void){
     for (int i = 0; i < numRecords; i++) {
         customer current;
         fread(&current, sizeof(customer), 1, f);
+
         // Truncate the name if it exceeds 44 characters
-        if (strlen(current.name) > CUSTOMER_NAME_MAX) {
-            current.name[CUSTOMER_NAME_MAX] = '\0';
-        }
-        printf("Name: %s\tLoyalty: %d\n", current.name, current.loyalty);
+        if (strlen(current.name) > CUSTOMER_NAME_MAX) current.name[CUSTOMER_NAME_MAX] = '\0';
+        printf("Name: %s\tLoyalty: %u\n", current.name, current.loyalty);
     }
 
     return 0;
