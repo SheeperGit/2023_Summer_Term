@@ -13,8 +13,19 @@ void heapify_at_v(FILE *f, int n, int index) {
     customer current, largestCustomer;
     fseek(f, index * sizeof(customer), SEEK_SET);
     fread(&current, sizeof(customer), 1, f);
+
+    // Truncate the name if it exceeds 44 characters
+    if (strlen(current.name) > CUSTOMER_NAME_MAX) {
+        current.name[CUSTOMER_NAME_MAX] = '\0';
+    }
+
     fseek(f, largest * sizeof(customer), SEEK_SET);
     fread(&largestCustomer, sizeof(customer), 1, f);
+
+    // Truncate the name if it exceeds 44 characters
+    if (strlen(largestCustomer.name) > CUSTOMER_NAME_MAX) {
+        largestCustomer.name[CUSTOMER_NAME_MAX] = '\0';
+    }
 
     //printf("Stuff= %s:%u\t%s:%u\n", current.name, current.loyalty, largestCustomer.name, largestCustomer.loyalty);
 
@@ -41,9 +52,9 @@ void heapify_at_v(FILE *f, int n, int index) {
             (rightCustomer.loyalty == largestCustomer.loyalty && strcmp(rightCustomer.name, largestCustomer.name) < 0))
         {
             largest = right;
-            //printf("BfRight= %s:%u\n", largestCustomer.name, largestCustomer.loyalty);
+            printf("BfRight= %s:%u\n", largestCustomer.name, largestCustomer.loyalty);
             largestCustomer = rightCustomer;
-            //printf("BfRight= %s:%u\n", rightCustomer.name, rightCustomer.loyalty);
+            printf("BfRight= %s:%u\n", rightCustomer.name, rightCustomer.loyalty);
         }
     }
 
@@ -122,6 +133,10 @@ int main(void){
     for (int i = 0; i < numRecords; i++) {
         customer current;
         fread(&current, sizeof(customer), 1, f);
+        // Truncate the name if it exceeds 44 characters
+        if (strlen(current.name) > CUSTOMER_NAME_MAX) {
+            current.name[CUSTOMER_NAME_MAX] = '\0';
+        }
         printf("Name: %s\tLoyalty: %d\n", current.name, current.loyalty);
     }
 
