@@ -115,38 +115,3 @@ int heapsort(const char *filename) {
     fclose(f);
     return 1;
 }
-
-int main(void){
-    const char *myfilename = "outputsample.dat";
-    int final = heapsort(myfilename);
-    if (final)
-        printf("Sorting completed successfully.\n");
-    else
-        printf("Error occurred during sorting.\n");
-
-    FILE *f = fopen(myfilename, "r+b");
-    if (f == NULL) {
-        fprintf(stderr, "Unable to open %s for reading\n", myfilename);
-        return 0;
-    }
-
-    fseek(f, 0, SEEK_END);
-    int numRecords = ftell(f) / sizeof(customer);
-
-    // Print the sorted records //
-    fseek(f, 0, SEEK_SET);
-    printf("Sorted records:\n");
-    for (int i = 0; i < numRecords; i++) {
-        customer current;
-        fread(&current, sizeof(customer), 1, f);
-
-        // Truncate name if it exceeds CUSTOMER_NAME_MAX characters //
-        if (strlen(current.name) > CUSTOMER_NAME_MAX) {
-            current.name[CUSTOMER_NAME_MAX] = '\0';
-        }
-
-        printf("Name: %s\tLoyalty: %u\n", current.name, current.loyalty);
-    }
-
-    return 0;
-}
