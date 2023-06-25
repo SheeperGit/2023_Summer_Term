@@ -24,7 +24,7 @@ void heapify_at_v(FILE *f, int n, int i) {
         fread(&leftCust, sizeof(customer), 1, f);
 
         if (leftCust.loyalty > largestCust.loyalty || 
-            (leftCust.loyalty == largestCust.loyalty && strcmp(leftCust.name, largestCust.name) > 0))
+            (leftCust.loyalty == largestCust.loyalty && strncmp(leftCust.name, largestCust.name, CUSTOMER_NAME_MAX) > 0))
         {
             largest = left_index;
             largestCust = leftCust;
@@ -37,7 +37,7 @@ void heapify_at_v(FILE *f, int n, int i) {
         fread(&rightCust, sizeof(customer), 1, f);
             
         if (rightCust.loyalty > largestCust.loyalty ||
-            (rightCust.loyalty == largestCust.loyalty && strcmp(rightCust.name, largestCust.name) > 0))
+            (rightCust.loyalty == largestCust.loyalty && strncmp(rightCust.name, largestCust.name, CUSTOMER_NAME_MAX) > 0))
         {
             largest = right_index;
             largestCust = rightCust;

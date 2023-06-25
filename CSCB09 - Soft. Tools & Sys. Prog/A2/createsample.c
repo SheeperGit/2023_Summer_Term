@@ -28,7 +28,7 @@ void print_customer_data(const char *filename) {
     fclose(f);
 
     for (int i = 0; i < num_records; i++) {
-        printf("Name: %s\tLoyalty: %u\n", customers[i].name, customers[i].loyalty);
+        printf("Name: %.44s\tLoyalty: %u\n", customers[i].name, customers[i].loyalty);
     }
 
     free(customers);
