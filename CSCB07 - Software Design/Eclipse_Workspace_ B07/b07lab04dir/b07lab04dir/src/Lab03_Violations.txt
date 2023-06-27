@@ -1,0 +1,25 @@
+/////////////////////////////////////////////////////////////////////////
+//////////////// B07 Lab03 Coding Convention Violations ////////////////
+///////////////////////////////////////////////////////////////////////
+
+1) In Lab03_Exception.java (L3,L5), Lab03_Exception is an uninformative name for the type
+   of exception it is meant to handle.
+2) In ComplexNumber.java (L35), line exceeds 80 chars in length. (84 chars) 
+   Remove unneeded whitespaces.  
+3) In ComplexNumber.java (L46), parentheses should surround the two premises as follows:
+   return (Double.compare(real, cn2.real) == 0) && (Double.compare(imaginary, cn2.imaginary) == 0);
+4) In ComplexNumber.java (L46), line exceeds 80 chars in length. (92 chars)
+   Instead, seperate the conditions w/ a newline starting at the `&&` operator:
+   return (Double.compare(real, cn2.real) == 0) && 
+          (Double.compare(imaginary, cn2.imaginary) == 0);
+5) In ComplexNumber.java (L18), missing newline b/w variable and the block that follows.
+6) In RationaNumber.java (L49), missing newline after single-line comment.
+7) In SpecialNumber.java (L33), missing newline b/w variable and the block that follows.
+8) In SpecialNumber.java (L47), bad `for statement` style.
+9) In SpecialNumber.java (L31), bad `if statement` style.
+10) In RationalNumber.java (L79, L80), parentheses should be placed around the entire expr,
+    not just `this.numerator`.
+
+/////////////////////////////////////////////////////////////////////////
+////////////////// And...Done! Thanks for reading! /////////////////////
+///////////////////////////////////////////////////////////////////////

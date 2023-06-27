@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="initial-scale=1">
+<title>B09 Lab week 7</title>
+<style>
+h1, h2, h3 { color: blue; }
+*.nest { margin-left: 2em }
+table {
+  border-collapse: collapse;
+}
+td, th {
+  padding: 3pt;
+  vertical-align: baseline;
+  border: 1pt solid;
+}
+td, th.left {
+  text-align: left;
+}
+</style>
+</head>
+<body>
+<h1>B09 Lab week 7</h1>
+
+<p>This is an exercise in modularizing C code.
+
+<p>The provided program <a href="main.c">main.c</a> consists of 3 parts that
+should be split into 3 files instead:
+
+<ul>
+  <li>The complex number stuff should be in its own file `complex.c'.
+  <li>The vector stuff should be in its own file `vector.c'.
+  <li>`main.c' should just have the main function (and #include the appropriate
+  header files).
+</ul>
+
+<p>Do the splitting.  Also write the corresponding header files `complex.h' and
+`vector.h'.
+
+<p>When marking, the tests involve alternative programs/modules that use the
+complex numbers stuff only, or the vector stuff only, or complex stuff not
+current used (e.g., <code>complex_add()</code>), or vector stuff not currently
+used (e.g., <code>vector_add()</code>).
+
+<p>What to hand in: complex.h, complex.c, vector.h, vector.c, main.c
+
+</body>
+</html>

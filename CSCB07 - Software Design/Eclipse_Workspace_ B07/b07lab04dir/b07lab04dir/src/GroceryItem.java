@@ -1,29 +1,20 @@
-public class GroceryItem {
-	String id;
-	String name;
-	double length;
-	double width;
-	double height;
-	
+public class GroceryItem extends Item {
 	public GroceryItem(String id, String name, double length, double width, double height) {
-		this.id = id;
-		this.name = name;
-		this.length = length;
-		this.width = width;
-		this.height = height;
-	}
+        super(id, name, length, width, height);
+    }
 
-	public double getLength() {
-		return length;
-	}
-
-	public double getHeight() {
-		return height;
-	}
-
-	public double getWidth() {
-		return width;
-	}
+    @Override
+    public String determineBoxSize() {
+        double max = Math.max(length, Math.max(width, height));
+        if (max < 10)
+            return "small";
+        else if (max < 20)
+            return "medium";
+        else if (max < 30)
+            return "large";
+        else
+            return "x-large";
+    }
 
 	@Override
 	public int hashCode() {
