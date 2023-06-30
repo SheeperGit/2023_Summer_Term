@@ -2,14 +2,12 @@ public abstract class Item {
     // All class fields are protected, //
     // because we want them to be accessible only to classes Book, GroceryItem. //
 
-    protected String id;
     protected String name;
     protected double length;
     protected double width;
     protected double height;
 
-    public Item(String id, String name, double length, double width, double height) {
-        this.id = id;
+    public Item(String name, double length, double width, double height) {
         this.name = name;
         this.length = length;
         this.width = width;
@@ -18,7 +16,8 @@ public abstract class Item {
 
     public abstract String determineBoxSize();
 
-    public String getName() {
+    @Override
+    public String toString() {
         return name;
     }
 
@@ -33,7 +32,6 @@ public abstract class Item {
     public double getHeight() {
         return height;
     }
-    
    
 }
 

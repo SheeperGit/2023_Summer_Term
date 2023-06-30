@@ -2,8 +2,8 @@ public class Book extends Item{
 	private String isbn;
 	
 	public Book(String isbn, String title, double length, double width, double height) {
-        super("isbn_throwaway", title, length, width, height);
-        this.id = isbn;
+        super(title, length, width, height);
+        this.isbn = isbn;
     }
 
 	@Override
@@ -20,7 +20,9 @@ public class Book extends Item{
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		
 		result = prime * result + ((isbn == null) ? 0 : isbn.hashCode());
+		
 		return result;
 	}
 
@@ -28,6 +30,7 @@ public class Book extends Item{
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
+		
 		if (obj == null || !(obj instanceof Book))
 			return false;
 		
@@ -37,11 +40,7 @@ public class Book extends Item{
 			!(isbn.equals(other.isbn))) {
 			return false;
 		}
+		
 		return true;
-	}
-
-	@Override
-	public String toString() {
-		return name;
 	}
 }
