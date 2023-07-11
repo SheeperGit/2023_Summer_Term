@@ -1,0 +1,27 @@
+///////////////////////////////////////////////////////////////////////////
+///////////////// Instructions: Clean up after your kids! ////////////////
+/////////////////////////////////////////////////////////////////////////
+
+So, your kids have started to climb over your neighbours' fence (idling)
+and standing there doing nothing useful?
+
+Here's the step-by-step process (haha, get it?) on how to kill them!
+
+ps -ae | grep -Fe "progname" | awk '{print $1}' | xargs kill
+
+
+Roughly speaking, ps -ae finds the processes belonging to your userID.
+		  grep -Fe "progname" matches any lines containing your program name `progname`.
+		  
+		  awk '{print $1}' prints the 1st arg of the naughty PIDs to get their PID#.
+		  This is needed b/c `ps -ae | grep -Fe "progname"` will print w/ the following format:
+
+		  2597 pts/0    00:00:00 progname
+		  2598 pts/0    00:00:00 progname
+		  2599 ?        00:00:00 progname
+		  2600 pts/0    00:00:00 progname
+		  2601 pts/0    00:00:00 progname
+
+		  Lastly, xargs kill will simply terminate the PIDs accordingly (one line at a time!)
+
+Done!

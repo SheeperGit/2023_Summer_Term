@@ -1,0 +1,3 @@
+/usr exists
+dir/subdir/ exists
+/usr/bin exists

@@ -1,0 +1,5 @@
+/non/existent is not a directory
+dir/subdir exists
+/usr/bin is a directory
+-dir/file1 does not exist
+dir/check.sh is not a directory

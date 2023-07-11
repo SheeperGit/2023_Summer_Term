@@ -1,0 +1,3 @@
+/non/existent does not exist
+dir/not/subdir does not exist
+dir/subdirectory does not exist

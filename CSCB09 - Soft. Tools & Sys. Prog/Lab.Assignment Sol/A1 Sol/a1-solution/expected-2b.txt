@@ -1,0 +1,1 @@
+/usr/local/sbin:/home/student/bin:/opt/local/bin:/bin:/usr/bin:/usr/local/games

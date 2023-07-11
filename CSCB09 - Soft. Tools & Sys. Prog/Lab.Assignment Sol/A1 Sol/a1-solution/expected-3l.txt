@@ -1,0 +1,1 @@
+/home/student/bin:/usr/games

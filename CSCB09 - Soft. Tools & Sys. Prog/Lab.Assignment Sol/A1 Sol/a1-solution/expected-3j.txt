@@ -1,0 +1,1 @@
+/bin:x:/usr/bin:/usr/local/games:/opt/bin

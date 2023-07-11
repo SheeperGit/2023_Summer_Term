@@ -1,0 +1,4 @@
+/usr/bin exists
+dir/with spaces/ exists
+dir/with spaces/file name exists
+dir/with spaces/file name/invalid does not exist
