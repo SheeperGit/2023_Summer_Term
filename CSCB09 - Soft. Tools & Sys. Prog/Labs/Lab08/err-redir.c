@@ -37,16 +37,14 @@ int main(int argc, char **argv) {
     //   printf("exit status: %d\n", the exit code);
 
     if (WIFEXITED(ws)) {
-      int exitstat = WEXITSTATUS(ws);
-      printf("exit status: %d\n", exitstat);
+      printf("exit status: %d\n", WEXITSTATUS(ws));
     }
 
     // If the wait status indicates killed-by-signal:
     //   printf("signal: %d\n", the signal number);
 
     if (WIFSIGNALED(ws)) {
-      int signum = WTERMSIG(ws);
-      printf("signal: %d\n", signum);
+      printf("signal: %d\n", WTERMSIG(ws));
     }
 
     // If neither, nothing to do. (Outside the scope of this lab.)
@@ -107,20 +105,20 @@ int main(int argc, char **argv) {
     //   printf("argv[%d] = %s\n", i, ARGS[i]);
     // }
 
-
     execvp(argv[2], ARGS);
     int exec_errno = errno;
 
     // TODO: Restore the original stderr.
-    if (dup2(bkup_fd_err, 2) == -1) {
+    if (dup2(fd_err, bkup_fd_err) == -1) {
       perror("dup2");
-      return 2;
+      return 1;
     }
 
-    close(bkup_fd_err); // Close the backup file descriptor
+    close(bkup_fd_err);
 
     errno = exec_errno;
     perror("cannot exec");
+    // printf("exec_errno (%d)= %d\n", ENOENT, exec_errno);
     return exec_errno == ENOENT ? 127 : 126; // ENOENT = file not found
   }
 }
