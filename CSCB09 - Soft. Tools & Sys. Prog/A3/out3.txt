@@ -1,0 +1,68 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+```
+```
+```
+```
+```
+$ ./a.out < cscb09-2023-5-a3.md > out.txt
+$ gcc -O2 -Wall sample.c chainpiping.c
+$ tr -cs A-Za-z '\n' < cscb09-2023-5-a3.md | tr A-Z a-z | sort | uniq > out.txt
+and write ends of respective pipes, e.g., `cmd_0`'s stdout should be the write
+array of commands and creates a pipeline of them. Conceptually
+A simple test case is in sample.c.  If you test with
+As usual, you should aim for reasonably efficient algorithms and reasonably
+## Chain Piping
+cmd_0 | cmd_1 | ... | cmd_n-1
+code.  (This is only to catch your mistakes or DOSing yourself in the track; the
+command.h and sample.c for the definition and an example.
+Correctness (mostly auto-testing) is worth 90% of the marks; code quality is
+CPU time (the TIME field in ps, top, and htop).
+% CSCB09 2023 Summer Assignment 3
+### Debugging And Error Messages
+| Due: July 26 Wednesday 11:59PM
+end of some pipe; that pipe's read end should become `cmd_1`'s stdin.
+### Good-Citizen Policy
+## Handing In
+(i.e., not redirected at all).  Other stdin's and stdout's should be read ends
+If a relevant system call fails, print an error message to stderr (e.g.,
+If you like to print debugging or extra error messages, please send them to
+In this assignment, you will practice making child processes, exec'ing other
+Marks can be deducted from this assignment if, on the Mathlab server or BV lab
+need wait statuses in this assignment.
+organized, comprehensible code.
+Overview: Implement the function `chain_piping()` (chainpiping.c) that takes an
+PCs, you have left-over processes that have been consuming more than 24 hours of
+`perror()` or `strerror()`), then (for simplicity) exit with a non-zero exit
+Please hand in chainpiping.c
+programs, and connecting child processes with pipes.
+relevant system calls should be successful if used correctly.)
+stderr only.
+stdin of `cmd_0` and stdout of `cmd_n-1` should be inherited from the parent
+The array of commands is given in the `command_list` struct. Please see
+then it should be equivalent to
+The parent should spawn 1 child per command.  At the end, the parent should
+| This assignment is worth 10% of the course grade.
+wait for all n children to terminate, then return from the function. We do not
+worth 10%.
