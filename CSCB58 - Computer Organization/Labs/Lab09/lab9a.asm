@@ -15,7 +15,7 @@ main:
 	mult $t6, $t6		# Get b * b
 	mflo $t6		# $t6 = b * b [32 bit]
 	
-	li $t0, 4	# t0 = 4 (Stores the coefficient part of -4ac)
+	li $t0, 4		# t0 = 4 (Stores the coefficient part of -4ac)
 	
 	mult $t5, $t7		# Get a * c
 	mflo $t5		# $t5 = a * c

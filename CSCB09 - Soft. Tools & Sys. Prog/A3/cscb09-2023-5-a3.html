@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      lang="en"
+      xml:lang="en"
+>
+<head>
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes" />
+<title>CSCB09 2023 Summer Assignment 3</title>
+<style type="text/css">
+h1, h2, h3 { color: blue; }
+dfn { font-style: normal; font-weight: bold; color: blue; }
+table { border-collapse: collapse; }
+th, td { border: 1px solid grey; padding: 0.2em 0.5em; }
+
+/* Code excerpts from loadable source files. */
+div.excerpt {
+  margin: 1em 0em 1em; /* top, left/right, bottom */
+}
+div.excerpt > span {
+  font-size: smaller;
+  background-color: #f0f0f0;
+  padding: 0.25em;
+}
+div.excerpt > pre {
+  background-color: #f0f0f0;
+  overflow: auto;
+  padding: 0.5em;
+  margin: 0px;
+}
+
+/* popup hidable table of contents, and the button to pop it up. */
+#tocdyn {
+  position: fixed;
+  width: 15em;
+  top: 0;
+  right: 0;
+  padding: 8px;
+  border-left: blue solid 1px;
+  border-bottom: blue solid 1px;
+  background-color: white;
+  color: black;
+  font-family: sans-serif;
+  visibility: hidden; /* initial value, to be overruled by javascript */
+}
+#tocbutton {
+  position: fixed;
+  top: 0;
+  right: 0;
+  opacity: 0.9;
+}
+#tocdyn > h1 {
+  font-size: 1em;
+  font-weight: bold;
+  margin-top: 0;
+}
+#tocdyn * {
+  text-align: left;
+}
+#tocdyn ul {
+  list-style-type: none;
+}
+#tocdyn > ul {
+  padding-left: 0;
+}
+#tocdyn > ul ul {
+  padding-left: 1em;
+}
+#tocdyn li {
+  margin-top: 0.3em;
+  margin-bottom: 0.3em;
+}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+ul.task-list{list-style: none;}
+</style>
+<script type="text/javascript">
+function show_toc() {
+  document.getElementById("tocdyn").style.visibility = "visible";
+}
+function hide_toc() {
+  document.getElementById("tocdyn").style.visibility = "";
+}
+</script>
+</head>
+<body id="top">
+<header class="title">
+<h1 class="title">CSCB09 2023 Summer Assignment 3</h1>
+</header>
+<div id="tocbutton"><button type="button" onclick="show_toc();">Table of Contents</button></div>
+<nav id="tocdyn" role="doc-toc" onclick="hide_toc();">
+<p><a href="#top">Top</a></p>
+<ul>
+<li><a href="#chain-piping">Chain Piping</a>
+<ul>
+<li><a href="#debugging-and-error-messages">Debugging And Error
+Messages</a></li>
+<li><a href="#good-citizen-policy">Good-Citizen Policy</a></li>
+</ul></li>
+<li><a href="#handing-in">Handing In</a></li>
+</ul>
+</nav>
+<div class="line-block">Due: July 26 Wednesday 11:59PM<br />
+This assignment is worth 10% of the course grade.</div>
+<p>In this assignment, you will practice making child processes,
+exec’ing other programs, and connecting child processes with pipes.</p>
+<p>As usual, you should aim for reasonably efficient algorithms and
+reasonably organized, comprehensible code.</p>
+<p>Correctness (mostly auto-testing) is worth 90% of the marks; code
+quality is worth 10%.</p>
+<h2 id="chain-piping">Chain Piping</h2>
+<p>Overview: Implement the function <code>chain_piping()</code>
+(chainpiping.c) that takes an array of commands and creates a pipeline
+of them. Conceptually</p>
+<pre><code>cmd_0 | cmd_1 | ... | cmd_n-1</code></pre>
+<p>The array of commands is given in the <code>command_list</code>
+struct. Please see command.h and sample.c for the definition and an
+example.</p>
+<p>The parent should spawn 1 child per command. At the end, the parent
+should wait for all n children to terminate, then return from the
+function. We do not need wait statuses in this assignment.</p>
+<p>stdin of <code>cmd_0</code> and stdout of <code>cmd_n-1</code> should
+be inherited from the parent (i.e., not redirected at all). Other
+stdin’s and stdout’s should be read ends and write ends of respective
+pipes, e.g., <code>cmd_0</code>’s stdout should be the write end of some
+pipe; that pipe’s read end should become <code>cmd_1</code>’s stdin.</p>
+<p>If a relevant system call fails, print an error message to stderr
+(e.g., <code>perror()</code> or <code>strerror()</code>), then (for
+simplicity) exit with a non-zero exit code. (This is only to catch your
+mistakes or DOSing yourself in the track; the relevant system calls
+should be successful if used correctly.)</p>
+<p>A simple test case is in sample.c. If you test with</p>
+<pre><code>$ gcc -O2 -Wall sample.c chainpiping.c
+$ ./a.out &lt; cscb09-2023-5-a3.md &gt; out.txt</code></pre>
+<p>then it should be equivalent to</p>
+<pre><code>$ tr -cs A-Za-z &#39;\n&#39; &lt; cscb09-2023-5-a3.md | tr A-Z a-z | sort | uniq &gt; out.txt</code></pre>
+<h3 id="debugging-and-error-messages">Debugging And Error Messages</h3>
+<p>If you like to print debugging or extra error messages, please send
+them to stderr only.</p>
+<h3 id="good-citizen-policy">Good-Citizen Policy</h3>
+<p>Marks can be deducted from this assignment if, on the Mathlab server
+or BV lab PCs, you have left-over processes that have been consuming
+more than 24 hours of CPU time (the TIME+ field in htop).</p>
+<h2 id="handing-in">Handing In</h2>
+<p>Please hand in chainpiping.c</p>
+</body>
+</html>
