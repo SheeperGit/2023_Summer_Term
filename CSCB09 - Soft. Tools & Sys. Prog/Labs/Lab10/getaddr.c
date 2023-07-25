@@ -23,18 +23,39 @@ int main(int argc, char *argv[]) {
   struct addrinfo hint;
   struct addrinfo *head;
 
-  // Use getaddrinfo() to find the IPv4 addresses of domain/host name argv[1].
-  // For simplicity, you may assume argc>=2 so argv[1] exists.
+  // For each IPv4 address provided by getaddrinfo() (traverse the whole linked list),
+  // use print_inet4_addr() above to print the IPv4 address in dot notation.
+
   //
   // Set the service parameter to the string "80" or "http", meaning port number
   // is 80.
+
+  memset(&hint, 0, sizeof(hint));
+  hint.ai_family = AF_INET;     // Set to IPv4 //
+  hint.ai_socktype = SOCK_STREAM; // Use the socket stream //
+
+  // Use getaddrinfo() to find the IPv4 addresses of domain/host name argv[1].
+  int s; 
+  if ((s = getaddrinfo(argv[1], "80", &hint, &head)) != 0) {
+    fprintf(stderr, "getaddrinfo() error: %s\n", gai_strerror(s));
+    return 1;
+  }
+
   //
   // Set up the hint parameter to request IPv4-only and stream-only.
   //
   // For each IPv4 address provided by getaddrinfo() (traverse the whole linked list),
   // use print_inet4_addr() above to print the IPv4 address in dot notation.
+
+  for (struct addrinfo *p = head; p != NULL; p = p->ai_next) {
+    print_inet4_addr(p->ai_addr);
+  }
+
   //
   // Lastly, use freeaddrinfo() to free the linked list.
+
+  freeaddrinfo(head);
+
   //
   // Optional: If getaddrinfo() returns a non-zero number, use gai_strerror()
   // for printing out the error message to stderr, then exit.
