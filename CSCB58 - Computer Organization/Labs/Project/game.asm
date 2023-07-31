@@ -43,9 +43,11 @@
 .eqv	BRp		0x10008e18	# Location of the bottom-right pixel of player character
 
 .data	
+RAND_COLOR_LEN:	.word	9		# Set to len of (RAND_COLOR + 1) for RNG
+			      #    Red	   Orange     Lime      Blue	  Cyan	  Magenta    Maroon    Purple   #
+RAND_COLOR:	.word		0xff0000, 0xff8000, 0x00ff00, 0x0000ff, 0x00ffff, 0xff00ff, 0x800000, 0x800080
 
 .text
-
 .globl main
 
 main:	# Alright, let's get this thing going! #
@@ -164,136 +166,6 @@ main:	# Alright, let's get this thing going! #
 	sw $s4, 1516($s0)
 	sw $s4, 1520($s0)
 	
-draw_plyr:	
-	# Draw player character #
-	sw $s2, 0($s1)		#
-	sw $s2, -4($s1)		#
-	sw $s2, -8($s1)		#	
-	sw $s2, -12($s1)	#
-	sw $s2, -16($s1)	#
-	sw $s2, -20($s1)	#
-	sw $s2, -24($s1)	#
-	
-	sw $s2, -128($s1)	#
-	sw $s3, -132($s1)	#
-	sw $s3, -136($s1)	#	
-	sw $s3, -140($s1)	#
-	sw $s3, -144($s1)	#
-	sw $s3, -148($s1)	#
-	sw $s2, -152($s1)	#
-	
-	sw $s2, -256($s1)	#
-	sw $s3, -260($s1)	#
-	sw $s2, -264($s1)	#
-	sw $s3, -268($s1)	#
-	sw $s2, -272($s1)	#
-	sw $s3, -276($s1)	#
-	sw $s2, -280($s1)	#
-	
-	sw $s2, -384($s1)	#
-	sw $s2, -388($s1)	#
-	sw $s2, -392($s1)	#
-	sw $s2, -396($s1)	#
-	sw $s2, -400($s1)	#
-	sw $s2, -404($s1)	#
-	sw $s2, -408($s1)	#
-	
-	sw $s2, -512($s1)	#
-	sw $s2, -516($s1)	#
-	sw $s2, -520($s1)	#
-	sw $s2, -524($s1)	#
-	sw $s2, -528($s1)	#
-	sw $s2, -532($s1)	#
-	sw $s2, -536($s1)	#
-	
-	sw $s2, -640($s1)	#
-	sw $s3, -644($s1)	#
-	sw $s2, -648($s1)	#
-	sw $s2, -652($s1)	#
-	sw $s2, -656($s1)	#
-	sw $s3, -660($s1)	#
-	sw $s2, -664($s1)	#
-	
-	sw $s2, -768($s1)	#
-	sw $s2, -772($s1)	#
-	sw $s2, -776($s1)	#
-	sw $s2, -780($s1)	#
-	sw $s2, -784($s1)	#
-	sw $s2, -788($s1)	#
-	sw $s2, -792($s1)	#
-	
-	# jr $ra			# Maybe rm?
-	
-draw_init_plat:
-	# Draw initial platform #
-	sw $s4, 3712($s0)	#
-	sw $s4, 3716($s0)	#
-	sw $s4, 3720($s0)	#
-	sw $s4, 3724($s0)	#
-	sw $s4, 3728($s0)	#
-	sw $s4, 3732($s0)	#
-	sw $s4, 3736($s0)	#
-	sw $s4, 3740($s0)	#
-	sw $s4, 3744($s0)	#
-	sw $s4, 3748($s0)	#
-	sw $s4, 3752($s0)	#
-	sw $s4, 3756($s0)	#
-	sw $s4, 3760($s0)	#
-	sw $s4, 3764($s0)	#
-	sw $s4, 3768($s0)	#
-	sw $s4, 3772($s0)	#
-	sw $s4, 3776($s0)	#
-	sw $s4, 3780($s0)	#
-	
-	# Debug Wall #
-	sw $s4, 3836($s0)
-	sw $s4, 3708($s0)
-	sw $s4, 3580($s0)
-	sw $s4, 3452($s0)
-	sw $s4, 3324($s0)
-	sw $s4, 3196($s0)
-	sw $s4, 3068($s0)
-	sw $s4, 2940($s0)
-	
-gravity_tick: # Applies 1 "unit" of gravity to player, if not standing on platform #
-	# If any of the pixels below the player are platforms, then ignore gravity #
-	lw $t0, 128($s1)
-	beq $t0, $s4, key_loop
-	lw $t0, 124($s1)
-	beq $t0, $s4, key_loop
-	lw $t0, 120($s1)
-	beq $t0, $s4, key_loop
-	lw $t0, 116($s1)
-	beq $t0, $s4, key_loop
-	lw $t0, 112($s1)
-	beq $t0, $s4, key_loop
-	lw $t0, 108($s1)
-	beq $t0, $s4, key_loop
-	lw $t0, 104($s1)
-	beq $t0, $s4, key_loop
-	
-	
-	addi $s1, $s1, 128	# Going down!
-	
-	# Clear the top line of the player #
-	sw $zero, -1020($s1)	#
-	sw $zero, -1024($s1)	#
-	sw $zero, -1028($s1)	#
-	sw $zero, -1032($s1)	#
-	sw $zero, -1036($s1)	#
-	sw $zero, -1040($s1)	#
-	sw $zero, -1044($s1)	#
-	sw $zero, -1048($s1)	#
-	sw $zero, -1052($s1)	#
-	
-	# Fall rate: 0.4secs #
-	li $v0, 32
-	li $a0, 400
-	syscall
-	
-	jr $ra
-	
-	
 key_loop:	
 	# Take user input continually #
 	li $t9, 0xffff0000 
@@ -302,6 +174,7 @@ key_loop:
 	
 cont:	
 	jal draw_plyr
+	jal draw_init_plat
 	# jal draw_asteroids
 
 	li $v0, 32 				# sleep for 50ms base, lower for harder difficulty
@@ -310,8 +183,17 @@ cont:
 	sub $a0, $a0, $t5
 	syscall
 	# jal check_collision
-	# jal clear_display
+	# jal clear_objs
 	jal gravity_tick
+	
+	sw $zero, -896($s1)
+	sw $zero, -900($s1)
+	sw $zero, -904($s1)
+	sw $zero, -908($s1)
+	sw $zero, -912($s1)
+	sw $zero, -916($s1)
+	sw $zero, -920($s1)
+	
 	j key_loop
 	
 keypress_happened:
@@ -324,9 +206,12 @@ keypress_happened:
 	beq $t8, 0x64, respondD
 	beq $t8, 0x70, respondP
 	
-clear_display:	# Call each obj clear function #
+clear_objs:	# Call each obj clear function (only use on GameOver) #
 	move $s7, $ra
 	jal clear_plyr
+	#jal clear_sm
+	#jal clear_md
+	#jal clear_lg
 	move $ra, $s7
 	jr $ra
 	
@@ -398,18 +283,167 @@ clear_plyr:	# Clears all player pixels #
 	sw $zero, -788($s1)	#
 	sw $zero, -792($s1)	#
 	
-	jr $ra			# 
+	jr $ra			#
 	
+draw_plyr:	
+	# Draw player character #
+	sw $s2, 0($s1)		#
+	sw $s2, -4($s1)		#
+	sw $s2, -8($s1)		#	
+	sw $s2, -12($s1)	#
+	sw $s2, -16($s1)	#
+	sw $s2, -20($s1)	#
+	sw $s2, -24($s1)	#
+	
+	sw $s2, -128($s1)	#
+	sw $s3, -132($s1)	#
+	sw $s3, -136($s1)	#	
+	sw $s3, -140($s1)	#
+	sw $s3, -144($s1)	#
+	sw $s3, -148($s1)	#
+	sw $s2, -152($s1)	#
+	
+	sw $s2, -256($s1)	#
+	sw $s3, -260($s1)	#
+	sw $s2, -264($s1)	#
+	sw $s3, -268($s1)	#
+	sw $s2, -272($s1)	#
+	sw $s3, -276($s1)	#
+	sw $s2, -280($s1)	#
+	
+	sw $s2, -384($s1)	#
+	sw $s2, -388($s1)	#
+	sw $s2, -392($s1)	#
+	sw $s2, -396($s1)	#
+	sw $s2, -400($s1)	#
+	sw $s2, -404($s1)	#
+	sw $s2, -408($s1)	#
+	
+	sw $s2, -512($s1)	#
+	sw $s2, -516($s1)	#
+	sw $s2, -520($s1)	#
+	sw $s2, -524($s1)	#
+	sw $s2, -528($s1)	#
+	sw $s2, -532($s1)	#
+	sw $s2, -536($s1)	#
+	
+	sw $s2, -640($s1)	#
+	sw $s3, -644($s1)	#
+	sw $s2, -648($s1)	#
+	sw $s2, -652($s1)	#
+	sw $s2, -656($s1)	#
+	sw $s3, -660($s1)	#
+	sw $s2, -664($s1)	#
+	
+	sw $s2, -768($s1)	#
+	sw $s2, -772($s1)	#
+	sw $s2, -776($s1)	#
+	sw $s2, -780($s1)	#
+	sw $s2, -784($s1)	#
+	sw $s2, -788($s1)	#
+	sw $s2, -792($s1)	#
+	
+	jr $ra
+	
+draw_init_plat:
+	# Draw initial platform #
+	sw $s4, 3712($s0)	#
+	sw $s4, 3716($s0)	#
+	sw $s4, 3720($s0)	#
+	sw $s4, 3724($s0)	#
+	sw $s4, 3728($s0)	#
+	sw $s4, 3732($s0)	#
+	sw $s4, 3736($s0)	#
+	sw $s4, 3740($s0)	#
+	sw $s4, 3744($s0)	#
+	sw $s4, 3748($s0)	#
+	sw $s4, 3752($s0)	#
+	sw $s4, 3756($s0)	#
+	sw $s4, 3760($s0)	#
+	sw $s4, 3764($s0)	#
+	sw $s4, 3768($s0)	#
+	sw $s4, 3772($s0)	#
+	sw $s4, 3776($s0)	#
+	sw $s4, 3780($s0)	#
+	
+	# Debug Wall #
+	sw $s4, 3836($s0)
+	sw $s4, 3708($s0)
+	sw $s4, 3580($s0)
+	sw $s4, 3452($s0)
+	sw $s4, 3324($s0)
+	sw $s4, 3196($s0)
+	sw $s4, 3068($s0)
+	sw $s4, 2940($s0)
+	
+	jr $ra
+
+
+gravity_tick: # Applies 1 "unit" of gravity to player, if not standing on platform #
+	# If any of the pixels below the player are platforms, then ignore gravity #
+	lw $t0, 128($s1)
+	beq $t0, $s4, key_loop
+	lw $t0, 124($s1)
+	beq $t0, $s4, key_loop
+	lw $t0, 120($s1)
+	beq $t0, $s4, key_loop
+	lw $t0, 116($s1)
+	beq $t0, $s4, key_loop
+	lw $t0, 112($s1)
+	beq $t0, $s4, key_loop
+	lw $t0, 108($s1)
+	beq $t0, $s4, key_loop
+	lw $t0, 104($s1)
+	beq $t0, $s4, key_loop
+	
+	
+	addi $s1, $s1, 128	# Going down!
+	
+	# Clear the top line of the player #
+	sw $zero, -1020($s1)	#
+	sw $zero, -1024($s1)	#
+	sw $zero, -1028($s1)	#
+	sw $zero, -1032($s1)	#
+	sw $zero, -1036($s1)	#
+	sw $zero, -1040($s1)	#
+	sw $zero, -1044($s1)	#
+	sw $zero, -1048($s1)	#
+	sw $zero, -1052($s1)	#
+	
+	# Fall rate: 0.4secs #
+	li $v0, 32
+	li $a0, 400
+	syscall
+	
+	jr $ra
+		
 respondW:	# Jump #
 	# Go up by 5 units (incrementally w.r.t. jump rate, 0.4secs) #
 	li $t0, 5		# $t0 = height of jump in pixels (Changeable)
+	
+	# Pick a random color to change the platforms! #
+	la $t1, RAND_COLOR	# $t1 = &(RANDO_COLOR)
+	li $v0, 42
+	li $a0, 0
+	la $a1, RAND_COLOR_LEN	# $a1 = &(RAND_COLOR_LEN)
+	lw $a1, 0($a1)		# $a1 = RAND_COLOR_LEN
+	syscall			# $a0 = rand(0, RAND_COLOR_LEN)
+	
+	li $t2, 4		# $t2 = sizeof(word)
+	mult $a0, $t2		# Get rand(0, RAND_COLOR_LEN) * sizeof(word)
+	mflo $t2		# $t2 now holds a random index in RAND_COLOR
+	
+	add $t2, $t1, $t2	# $t2 = &(RAND_COLOR + randIndex)
+	lw $s4, 0($t2)		# Set PLAT_COLOR to new random color!
+	
 jump:	addi $t0, $t0, -1	# $t0--
 	addi $s1, $s1, -128	# Going up!
 	
-	# jal draw_plyr
+	move $t3, $ra
+	jal draw_plyr
+	move $ra, $t3
 	
 	# Clear the bottom line of the player #
-	sw $zero, 132($s1)	#
 	sw $zero, 128($s1)	#
 	sw $zero, 124($s1)	#
 	sw $zero, 120($s1)	#
@@ -417,11 +451,10 @@ jump:	addi $t0, $t0, -1	# $t0--
 	sw $zero, 112($s1)	#
 	sw $zero, 108($s1)	#
 	sw $zero, 104($s1)	#
-	sw $zero, 100($s1)	#
 	
-	# Jump rate: 0.4secs #
+	# Jump rate: 0.2secs #
 	li $v0, 32
-	li $a0, 400
+	li $a0, 200
 	syscall
 	
 	bgtz $t0, jump		# If you still got more jumps left...Jump some more units!
