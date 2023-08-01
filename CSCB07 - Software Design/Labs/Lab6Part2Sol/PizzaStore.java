@@ -1,9 +1,9 @@
 public class PizzaStore {
-	Pizza order() {
+	FoodItemInterface order() {
 		Pizza pizza = new Pizza();
 		pizza.customize();
 		pizza.prepare();
 		pizza.box();
-		return pizza;
+		return new PizzaAdapter(pizza);
 	}
 }

@@ -1,7 +1,6 @@
 import java.util.Scanner;
 
-public class Pizza {
-	String type;
+public class Pizza extends FoodItem implements FoodItemInterface {
 	String size;
 	
 	public void customize() {
