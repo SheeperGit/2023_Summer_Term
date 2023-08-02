@@ -1,0 +1,93 @@
+This task is on network stream socket programming.
+
+HandMeUp File Submission System:
+
+The protocol in this task is a stripped down example of submitting files to a central server. In short, a client sends a user name (we omit authentication tokens), a file name, the file size, and the file content. The server stores the file and sends a serial number.
+
+Since stream sockets are used, there is no “packet boundary”. We use newlines for delimiters.
+
+Here is the detailed protocol sequence (IF neither clients nor servers malfunction):
+
+    The client connects to the server.
+
+    The client sends:
+        user name (1 to 8 letters or digits), newline
+        file name (1 to 100 bytes, should not contain '/' or newline), newline
+        file size (1 to 10 digits), newline
+        file content
+
+    Splitting at any point is possible. You only have newlines and the promised file size to rely on.
+
+    The server checks that the user name, the file name, and the file size satisfy the constraints stated above.
+
+    If not, the server sends HDERR, newline; then the server disconnects. (“HD” stands for “header”.)
+
+    The server receives the number of bytes as promised by the client. (File storage is specified in a later section.)
+
+    The server sends a serial number (1 to 10 digits), newline. (Serial numbers are specified in a later section.)
+
+    Again, no guarantee that even these 11 bytes are not split.
+
+    Both sides disconnect.
+
+Client:
+
+Implement a client program hmu-client.c. The 4 command line arguments are: server address in dot notation, server port number, user name, file name. (When marking, they will be valid, and the file will be a readable regular file with size below 232.) The client program is responsible for determining the file size.
+
+If opening the file for reading fails, or the IP address or the port number is invalid, or connection is unsuccessful, you may print an error message of your choice to stderr, and exit with a non-zero exit code.
+
+If connection is successful, follow the protocol. At the end, print the received serial number to stdout before exiting (with exit code 0).
+
+Server malfunctions happen all the time due to bugs and service disruptions. Here are the scenerios you must handle as prescribed:
+
+    Error when sending data, or error or EOF when trying to receive the serial number: Server disruption. Exit with a non-zero exit code or get terminated by SIGPIPE; you may print error messages to stderr.
+
+    When expecting a serial number: receiving non-digits, or more than 10 bytes, or no newline after: Server bug. Do not treat it as a valid serial number. Exit with a non-zero exit code; you may print error messages to stderr.
+
+    Extra bytes after the serial number and the newline: Just ignore.
+
+Server:
+
+Implement a server program hmu-server.c. The 2 command line arguments: port number to bind to, pathname of a helper program (explained in a later section).
+
+The server should bind to the given port at address INADDR_ANY. We do expect this to fail all the time due to the “address already in use” error. If this happens, print an error message to stderr and exit with a non-zero exit code.
+
+A server should be responsive to multiple existing and incoming clients concurrently, even when a bad client stalls and wants the server to wait forever; bad clients happen all the time by bad luck, bugs, or malice. Use a fork approach: forking a child process for each client, so the parent is just an accept-fork loop.
+
+If you use forking: Zombie processes should not happen. And yet, the parent process should not hang indefinitely to wait for a child to terminate, since it must also stay responsive to new connection requests.
+
+The server should not terminate until SIGTERM or SIGINT. Upon those signals, it should be terminated by the signal (least work, default action) or exit with exit code 0. (If you use forking, this is required of the parent process only.)
+
+Client malfunctions happen all the time. Here are the scenerios you should handle as prescribed:
+
+    Header errors: As covered in the protocol description.
+
+    Premature EOF when receiving header or file content: The client is gone. Just disconnect. (Do not send a serial number.)
+
+    Longer file content than the client promised: Ignore the extra bytes. (Proceed to sending the serial number.)
+
+Serial Numbers And File Storage:
+
+The server maintains a serial number. It starts from 0 when the server starts, and increases by 1 (post-increment) for every successful accept(). To be concrete, the first client connection gets 0 for serial number.
+
+The serial number is for both saving the received file and sending to the client at the end.
+
+The received file should be saved in the current working directory under the name user-serial-filename. Example: If the user name is trebla, the client-supplied filename is foo.c, and the serial number is 4, then save to trebla-4-foo.c. Assume no errors writing the file.
+
+If fewer bytes than the client promised are received, delete the saved file.
+
+Helper Program:
+
+If you choose forking, you can also choose to have the child exec() a different program dedicated to handling a client. This can lead to tidy code and safeguard against common mistakes, e.g., accidentally running parent code and calling accept() and even fork() therefore potential fork-bomb.
+
+If you choose to do this, put the code in hmu-helper.c. You create your own convention for how it knows the socket FD, the filename, the serial number, etc. (e.g., make your own command line arguments).
+
+We may compile it to any filename under any directory, so please do not hardcode the filename in the exec() call. Instead, please use the 2nd command line argument of the server program. We will provide the right pathname.
+
+If exec() fails (meaning typo in the pathname), please call exit() with a non-zero exit code. This safeguards against accidentally running parent code and calling fork().
+
+File Size vs Memory Size:
+
+Do not assume that you have enough memory for the whole file. This applies to both clients and servers.
+
+Assume that reading and writing regular files do not block.
