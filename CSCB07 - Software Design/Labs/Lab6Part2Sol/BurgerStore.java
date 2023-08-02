@@ -1,9 +1,7 @@
 public class BurgerStore {
-	FoodItemInterface order() {
-		Burger burger = new Burger();
-		burger.customize();
-		burger.prepare();
-		burger.box();
-		return new BurgerAdapter(burger);
+	Store<Burger> bStore = new Store<>();
+	
+	public Burger order() {
+		return bStore.order(new Burger());
 	}
 }

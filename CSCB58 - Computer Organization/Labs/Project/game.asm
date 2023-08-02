@@ -43,12 +43,14 @@
 .eqv	BRp		0x10008e18	# Location of the bottom-right pixel of player character
 
 .data	
-RAND_COLOR_LEN:	.word	9		# Set to len of (RAND_COLOR + 1) for RNG
+RAND_COLOR_LEN:	.word	8		# Length of RAND_COLOR arr, increase w/ new color additions
 			      #    Red	   Orange     Lime      Blue	  Cyan	  Magenta    Maroon    Purple   #
 RAND_COLOR:	.word		0xff0000, 0xff8000, 0x00ff00, 0x0000ff, 0x00ffff, 0xff00ff, 0x800000, 0x800080
 
 .text
 .globl main
+
+# Note to Self: $s0-$s7 && $t9 are RESERVED (Update this if needed) #
 
 main:	# Alright, let's get this thing going! #
 	li $s0, BASE_ADDRESS	# $s0 stores the base address for display
@@ -57,6 +59,22 @@ main:	# Alright, let's get this thing going! #
 	li $s3, FACE_COLOR	# $s3 stores the FACE_COLOR
 	li $s4, PLAT_COLOR	# $s4 stores the PLAT_COLOR
 	li $s5, COIN_COLOR	# $s5 stores the COIN_COLOR
+	li $s6, 0		# $s6 stores the initial player score (Increases w/ time and coins)
+	
+	# initial position of platform
+	li $v0, 42				# Get a random number b/w 0 and 28
+	li $a0, 0
+	li $a1, 28
+	syscall
+	
+	addi $a0, $a0, 3			# Get start addr of platform
+	li $t1, 128
+	mult $t1, $a0
+	mflo $t2
+	addi $t2, $t2, -48
+	
+	li $t9, BASE_ADDRESS			# $t9 stores the right side of the platform
+	add $t9, $t9, $t2
 	
 	# Draw Title #
 	
@@ -165,8 +183,9 @@ main:	# Alright, let's get this thing going! #
 	sw $s4, 1780($s0)
 	sw $s4, 1516($s0)
 	sw $s4, 1520($s0)
-	
+		
 key_loop:	
+	addi $s6, $s6, 1	# Adds +1 to player score
 	# Take user input continually #
 	li $t9, 0xffff0000 
 	lw $t8, 0($t9)
@@ -175,17 +194,18 @@ key_loop:
 cont:	
 	jal draw_plyr
 	jal draw_init_plat
-	# jal draw_asteroids
+	# jal draw_rand_plat
 
-	li $v0, 32 				# sleep for 50ms base, lower for harder difficulty
-	li $t5, 50				# get how much to reduce delay by
-	li $a0, 50				# base difficulty is at 50ms delay
+	li $v0, 32 				# Sleep for 0.05secs (Lower for harder difficulty)
+	li $t5, 50				# Get delay rate
+	li $a0, 50				# Base difficulty is at 0.05secs delay
 	sub $a0, $a0, $t5
 	syscall
 	# jal check_collision
 	# jal clear_objs
 	jal gravity_tick
-	
+
+	# Deletes the line above the player (Experimental!) #	
 	sw $zero, -896($s1)
 	sw $zero, -900($s1)
 	sw $zero, -904($s1)
@@ -202,7 +222,7 @@ keypress_happened:
 
 	beq $t8, 0x77, respondW
 	beq $t8, 0x61, respondA
-	beq $t8, 0x73, respondS
+	# beq $t8, 0x73, respondS
 	beq $t8, 0x64, respondD
 	beq $t8, 0x70, respondP
 	
@@ -366,18 +386,10 @@ draw_init_plat:
 	sw $s4, 3776($s0)	#
 	sw $s4, 3780($s0)	#
 	
-	# Debug Wall #
-	sw $s4, 3836($s0)
-	sw $s4, 3708($s0)
-	sw $s4, 3580($s0)
-	sw $s4, 3452($s0)
-	sw $s4, 3324($s0)
-	sw $s4, 3196($s0)
-	sw $s4, 3068($s0)
-	sw $s4, 2940($s0)
-	
 	jr $ra
-
+	
+draw_rand_plat:
+	
 
 gravity_tick: # Applies 1 "unit" of gravity to player, if not standing on platform #
 	# If any of the pixels below the player are platforms, then ignore gravity #
@@ -418,11 +430,26 @@ gravity_tick: # Applies 1 "unit" of gravity to player, if not standing on platfo
 	jr $ra
 		
 respondW:	# Jump #
+	# If player is not standing on the platform_color, go back to cont #
+	lw $t0, 128($s1)
+	bne $t0, $s4, cont
+	lw $t0, 124($s1)
+	bne $t0, $s4, cont
+	lw $t0, 120($s1)
+	bne $t0, $s4, cont
+	lw $t0, 116($s1)
+	bne $t0, $s4, cont
+	lw $t0, 112($s1)
+	bne $t0, $s4, cont
+	lw $t0, 108($s1)
+	bne $t0, $s4, cont
+	lw $t0, 104($s1)
+	bne $t0, $s4, cont
+
 	# Go up by 5 units (incrementally w.r.t. jump rate, 0.4secs) #
 	li $t0, 5		# $t0 = height of jump in pixels (Changeable)
 	
 	# Pick a random color to change the platforms! #
-	la $t1, RAND_COLOR	# $t1 = &(RANDO_COLOR)
 	li $v0, 42
 	li $a0, 0
 	la $a1, RAND_COLOR_LEN	# $a1 = &(RAND_COLOR_LEN)
@@ -433,6 +460,7 @@ respondW:	# Jump #
 	mult $a0, $t2		# Get rand(0, RAND_COLOR_LEN) * sizeof(word)
 	mflo $t2		# $t2 now holds a random index in RAND_COLOR
 	
+	la $t1, RAND_COLOR	# $t1 = &(RANDO_COLOR)
 	add $t2, $t1, $t2	# $t2 = &(RAND_COLOR + randIndex)
 	lw $s4, 0($t2)		# Set PLAT_COLOR to new random color!
 	
@@ -452,9 +480,9 @@ jump:	addi $t0, $t0, -1	# $t0--
 	sw $zero, 108($s1)	#
 	sw $zero, 104($s1)	#
 	
-	# Jump rate: 0.2secs #
+	# Jump rate: 0.12secs #
 	li $v0, 32
-	li $a0, 200
+	li $a0, 120
 	syscall
 	
 	bgtz $t0, jump		# If you still got more jumps left...Jump some more units!

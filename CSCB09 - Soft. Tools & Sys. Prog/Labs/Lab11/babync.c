@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#define MAX_BUFFER_SIZE 1024
+
 void parse_inaddr(struct addrinfo *ai, const char *hostname, const char *port) {
   struct addrinfo hint;
   struct addrinfo *head;
@@ -54,68 +56,55 @@ int main(int argc, char **argv)
   // Do not exit until both stdin and socket are EOF.
   // Do not monitor an FD for reading if it reached EOF in the past, lest you
   // would cause busy-polling. (Why?)
+  fd_set readfds;
+  int stdineof = 0;
+  int sockeof = 0;
 
-  // Set up variables for select() loop
-  fd_set read_fds, write_fds;
-  FD_ZERO(&read_fds);
-  FD_ZERO(&write_fds);
-
-  int maxfd = s > 0 ? s : 0;
-
-  FILE *stdin_fp = fdopen(STDIN_FILENO, "r");
-  FILE *stdout_fp = fdopen(STDOUT_FILENO, "w");
-
-  for (;;) {
-    FD_SET(STDIN_FILENO, &read_fds);
-    FD_SET(s, &read_fds);
-
-    // Select the appropriate FDs based on previous EOF status
-    if (!feof(stdin_fp)) {
-      FD_SET(STDIN_FILENO, &write_fds);
-    }
-
-    if (!feof(stdout_fp)) {
-      FD_SET(s, &write_fds);
-    }
-
-    int ret = select(maxfd + 1, &read_fds, NULL, NULL, NULL);
-
-    if (ret == -1) {
-      perror("select");
+  for(;;){
+    // Close if done reading and sock is done processing //
+    if(stdineof && sockeof) {
       break;
+    }
+
+    FD_ZERO(&readfds);
+
+    if(!stdineof){
+      FD_SET(0, &readfds);
+    }
+    if(!sockeof){
+      FD_SET(s, &readfds);
     } 
 
-    if (FD_ISSET(STDIN_FILENO, &read_fds)) {
-      // Data available to read from stdin, write it to the socket
-      char buffer[1024];
-      ssize_t bytes_read = read(STDIN_FILENO, buffer, sizeof(buffer));
-      if (bytes_read <= 0) {
-        // Either EOF or an error occurred, so stop monitoring stdin for reading
-        FD_CLR(STDIN_FILENO, &read_fds);
-      } else {
-        ssize_t bytes_written = write(s, buffer, bytes_read);
-        if (bytes_written == -1) {
-          perror("write to socket");
-          close(s);
-          return 1;
-        }
+    int res = select(s+1, &readfds, NULL, NULL, NULL);
+
+    if(res < 0){
+      perror("Error with select");
+      exit(EXIT_FAILURE);
+    }
+
+    if(FD_ISSET(STDIN_FILENO, &readfds)){
+      char stdin_buffer[MAX_BUFFER_SIZE];
+      int r = read(STDIN_FILENO, stdin_buffer, MAX_BUFFER_SIZE);
+      if(r == 0){
+        stdineof = 1;
+      }else if(r < 0){
+        perror("Read Error");
+        exit(EXIT_FAILURE);
+      }else{
+        write(s, stdin_buffer, r);
       }
     }
 
-    if (FD_ISSET(s, &read_fds)) {
-      // Data available to read from the socket, write it to stdout
-      char buffer[1024];
-      ssize_t bytes_read = read(s, buffer, sizeof(buffer));
-      if (bytes_read <= 0) {
-        // Either EOF or an error occurred, so stop monitoring the socket for reading
-        FD_CLR(s, &read_fds);
-      } else {
-        ssize_t bytes_written = write(STDOUT_FILENO, buffer, bytes_read);
-        if (bytes_written == -1) {
-          perror("write to stdout");
-          close(s);
-          return 1;
-        }
+    if(FD_ISSET(s, &readfds)){
+      char stdin_buffer[MAX_BUFFER_SIZE];
+      int r = read(s, stdin_buffer, MAX_BUFFER_SIZE);
+      if(r == 0){
+        sockeof = 1;
+      }else if(r < 0){
+        perror("Read Error");
+        exit(EXIT_FAILURE);
+      }else{
+        write(STDOUT_FILENO, stdin_buffer, r);
       }
     }
   }
