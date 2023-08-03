@@ -32,9 +32,9 @@ int main(int argc, char *argv[]) {
     const char *username = argv[3];
     const char *filename = argv[4];
 
-    // Open the file to read its content and determine its size
-    FILE *f = fopen(filename, "r");
-    if (!f) {
+    // Open file, read content and determine its size //
+    FILE *f;
+    if ((f = fopen(filename, "r")) == NULL) {
       fprintf(stderr, "Error opening file: %s\n", filename);
       exit(EXIT_FAILURE);
     }
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     long file_size = ftell(f);
     fseek(f, 0, SEEK_SET);
 
-    // Create a buffer to store the entire file content
+    // Create a buffer to store all file content //
     char file_content[MAX_BUFFER_SIZE];
     size_t bytes_read = fread(file_content, 1, sizeof(file_content), f);
     fclose(f);
@@ -54,8 +54,8 @@ int main(int argc, char *argv[]) {
     }
 
     // Connect to the server //
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd == -1) {
+    int sockfd;
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
       perror("Error opening socket");
       exit(EXIT_FAILURE);
     }
@@ -67,11 +67,11 @@ int main(int argc, char *argv[]) {
     inet_pton(AF_INET, server_addr, &server_addr.sin_addr);
 
     if (connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
-      perror("Error connecting to the server");
+      perror("Error connecting to server!");
       exit(EXIT_FAILURE);
     }
 
-    // Send user name, file name, file size, and file content to the server //
+    // Send username, filename, filesize, and file_content to server //
     send_data(sockfd, username);
     send_data(sockfd, "\n");
 
@@ -85,16 +85,16 @@ int main(int argc, char *argv[]) {
 
     send_data(sockfd, file_content);
 
-    // Receive serial number from the server //
-    char serial_number_str[11]; // 10 digits for serial number + '\0'
-    int recv_bytes = recv(sockfd, serial_number_str, sizeof(serial_number_str) - 1, 0);
-    if (recv_bytes <= 0) {
+    // Receive serial number from server //
+    char serial_num_str[11]; // 10 digits for serial number + '\0'
+    int recv_bytes;
+    if ((recv_bytes = recv(sockfd, serial_num_str, sizeof(serial_num_str) - 1, 0)) <= 0) {
       perror("Error receiving serial number");
       exit(EXIT_FAILURE);
     }
-    serial_number_str[recv_bytes] = '\0';
+    serial_num_str[recv_bytes] = '\0';
 
-    printf("Received serial number: %s\n", serial_number_str);
+    printf("Received serial number: %s\n", serial_num_str);
 
     close(sockfd);
     return 0;

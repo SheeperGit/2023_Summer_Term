@@ -39,7 +39,7 @@ void handle_client(int client_sock) {
   buffer[recv_bytes] = '\0';
   sscanf(buffer, "%100[^/\n]", file_name);
 
-  // Receive file size from client //
+  // Receive filesize from client //
   recv_bytes = recv(client_sock, buffer, sizeof(buffer) - 1, 0);
   if (recv_bytes <= 0) {
     close(client_sock);
@@ -50,8 +50,8 @@ void handle_client(int client_sock) {
   long file_size = atol(file_size_str);
 
   // Receive file content from client //
-  FILE *file = fopen(file_name, "wb");
-  if (!file) {
+  FILE *f; 
+  if ((f = fopen(file_name, "wb")) == NULL) {
     send(client_sock, "HDERR\n", 6, 0);
     close(client_sock);
     return;
@@ -61,14 +61,14 @@ void handle_client(int client_sock) {
   while (total_received < file_size) {
       recv_bytes = recv(client_sock, buffer, sizeof(buffer), 0);
       if (recv_bytes <= 0) {
-        fclose(file);
+        fclose(f);
         close(client_sock);
         return;
       }
       total_received += recv_bytes;
-      fwrite(buffer, 1, recv_bytes, file);
+      fwrite(buffer, 1, recv_bytes, f);
   }
-  fclose(file);
+  fclose(f);
 
   // Send serial number to client //
   static int serial_number = 0;
@@ -148,8 +148,8 @@ int main(int argc, char *argv[]) {
     } else if (pid == 0) {
       // Child process //
       close(sockfd);
-      execlp(helper_program_pathname, helper_program_pathname, (char *)NULL);
-      perror("Error executing helper program");
+      execlp("./hmu-helper.c", "./hmu-helper.c", (char *)NULL);
+      perror("Error executing hmu-helper.c");
       exit(EXIT_FAILURE);
     } else {
       // Parent process //

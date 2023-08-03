@@ -61,17 +61,19 @@ main:	# Alright, let's get this thing going! #
 	li $s5, COIN_COLOR	# $s5 stores the COIN_COLOR
 	li $s6, 0		# $s6 stores the initial player score (Increases w/ time and coins)
 	
-	# initial position of platform
-	li $v0, 42				# Get a random number b/w 0 and 28
+	# Initial position of rand platform #
+	# Get a random number b/w 0 and 28 #
+	li $v0, 42				
 	li $a0, 0
 	li $a1, 28
-	syscall
+	syscall					# $a0 = rand(0, 28)
 	
-	addi $a0, $a0, 3			# Get start addr of platform
-	li $t1, 128
-	mult $t1, $a0
-	mflo $t2
-	addi $t2, $t2, -48
+	# Get start addr of platform (max_height = 3) #
+	addi $a0, $a0, 12			# $a0 = rand(3, 31)	
+	li $t1, 128				# $t1 = 128
+	mult $t1, $a0				# Get 128 * rand(3, 31)
+	mflo $t2				# $t2 = 128 * rand(3, 31)
+	addi $t2, $t2, -4			# $t2 = [128 * rand(3, 31) - 4] (To start at right side of the screen)
 	
 	li $t9, BASE_ADDRESS			# $t9 stores the right side of the platform
 	add $t9, $t9, $t2
@@ -187,14 +189,14 @@ main:	# Alright, let's get this thing going! #
 key_loop:	
 	addi $s6, $s6, 1	# Adds +1 to player score
 	# Take user input continually #
-	li $t9, 0xffff0000 
-	lw $t8, 0($t9)
+	li $t7, 0xffff0000 
+	lw $t8, 0($t7)
 	beq $t8, 1, keypress_happened
 	
 cont:	
 	jal draw_plyr
 	jal draw_init_plat
-	# jal draw_rand_plat
+	jal draw_rand_plat
 
 	li $v0, 32 				# Sleep for 0.05secs (Lower for harder difficulty)
 	li $t5, 50				# Get delay rate
@@ -217,8 +219,8 @@ cont:
 	j key_loop
 	
 keypress_happened:
-	li $t9, 0xffff0000	#
-	lw $t8, 4($t9) 		# Load which key was pressed
+	li $t0, 0xffff0000	#
+	lw $t8, 4($t0) 		# Load which key was pressed
 
 	beq $t8, 0x77, respondW
 	beq $t8, 0x61, respondA
@@ -389,6 +391,19 @@ draw_init_plat:
 	jr $ra
 	
 draw_rand_plat:
+	sw $s4, 0($t9)
+	sw $s4, -4($t9)
+	sw $s4, -8($t9)
+	sw $s4, -12($t9)
+	sw $s4, -16($t9)
+	sw $s4, -20($t9)
+	sw $s4, -24($t9)
+	sw $s4, -28($t9)
+	sw $s4, -32($t9)
+	sw $s4, -36($t9)
+	sw $s4, -40($t9)
+	
+	jr $ra	
 	
 
 gravity_tick: # Applies 1 "unit" of gravity to player, if not standing on platform #
@@ -430,21 +445,26 @@ gravity_tick: # Applies 1 "unit" of gravity to player, if not standing on platfo
 	jr $ra
 		
 respondW:	# Jump #
-	# If player is not standing on the platform_color, go back to cont #
+	# If at least one player_pixel is standing on platform_color, it's a legal jump! #
+	# O/w, don't let player jump and go back to cont #
 	lw $t0, 128($s1)
-	bne $t0, $s4, cont
+	beq $t0, $s4, legal_jump
 	lw $t0, 124($s1)
-	bne $t0, $s4, cont
+	beq $t0, $s4, legal_jump
 	lw $t0, 120($s1)
-	bne $t0, $s4, cont
+	beq $t0, $s4, legal_jump
 	lw $t0, 116($s1)
-	bne $t0, $s4, cont
+	beq $t0, $s4, legal_jump
 	lw $t0, 112($s1)
-	bne $t0, $s4, cont
+	beq $t0, $s4, legal_jump
 	lw $t0, 108($s1)
-	bne $t0, $s4, cont
+	beq $t0, $s4, legal_jump
 	lw $t0, 104($s1)
-	bne $t0, $s4, cont
+	beq $t0, $s4, legal_jump
+	
+	j cont
+	
+legal_jump:
 
 	# Go up by 5 units (incrementally w.r.t. jump rate, 0.4secs) #
 	li $t0, 5		# $t0 = height of jump in pixels (Changeable)
