@@ -18,9 +18,9 @@
 #
 # Which approved features have been implemented for milestone 3?
 # (See the assignment handout for the list of additional features)
-# 1. (fill in the feature, if any)
-# 2. (fill in the feature, if any)
-# 3. (fill in the feature, if any)
+# 1. Platforms change color with every jump! (Randomly, based on colors in a fixed array, RAND_COLOR)
+# 2. Player score (Increases with time and heavily increases with amt of coins earned)
+# 3. Arcade-Style UI
 # ... (add more if necessary)
 #
 # Link to video demonstration for final submission:
@@ -50,7 +50,7 @@ RAND_COLOR:	.word		0xff0000, 0xff8000, 0x00ff00, 0x0000ff, 0x00ffff, 0xff00ff, 0
 .text
 .globl main
 
-# Note to Self: $s0-$s7 && $t9 are RESERVED (Update this if needed) #
+# Note to Self: $s0-$s7 && $t7-$t9 are RESERVED (Update this if needed) #
 
 main:	# Alright, let's get this thing going! #
 	li $s0, BASE_ADDRESS	# $s0 stores the base address for display
@@ -61,22 +61,39 @@ main:	# Alright, let's get this thing going! #
 	li $s5, COIN_COLOR	# $s5 stores the COIN_COLOR
 	li $s6, 0		# $s6 stores the initial player score (Increases w/ time and coins)
 	
-	# Initial position of rand platform #
-	# Get a random number b/w 0 and 28 #
+	# Initial position of low platform #
+	# Get a random number b/w 0 and 4 #
 	li $v0, 42				
 	li $a0, 0
-	li $a1, 28
-	syscall					# $a0 = rand(0, 28)
+	li $a1, 4
+	syscall					# $a0 = rand(0, 4)
 	
-	# Get start addr of platform (max_height = 3) #
-	addi $a0, $a0, 12			# $a0 = rand(3, 31)	
+	# Get start addr of low platform (max_height = 32 - 26 = 6) #
+	addi $a0, $a0, 26			# $a0 = rand(26, 30)	
 	li $t1, 128				# $t1 = 128
-	mult $t1, $a0				# Get 128 * rand(3, 31)
-	mflo $t2				# $t2 = 128 * rand(3, 31)
-	addi $t2, $t2, -4			# $t2 = [128 * rand(3, 31) - 4] (To start at right side of the screen)
+	mult $t1, $a0				# Get 128 * rand(26, 30)
+	mflo $t2				# $t2 = 128 * rand(26, 30)
+	addi $t2, $t2, -4			# $t2 = [128 * rand(26, 30) - 4] (To start at right side of the screen)
 	
-	li $t9, BASE_ADDRESS			# $t9 stores the right side of the platform
-	add $t9, $t9, $t2
+	li $t7, BASE_ADDRESS			# $t7 stores the right side of the platform
+	add $t7, $t7, $t2
+	
+	# Initial position of medium platform #
+	# Get a random number b/w 0 and 9 #
+	li $v0, 42				
+	li $a0, 0
+	li $a1, 4
+	syscall					# $a0 = rand(0, 4)
+	
+	# Get start addr of platform (max_height = 32 - 21 = 9) #
+	addi $a0, $a0, 21			# $a0 = rand(21, 25)	
+	li $t1, 128				# $t1 = 128
+	mult $t1, $a0				# Get 128 * rand(21, 25)
+	mflo $t2				# $t2 = 128 * rand(21, 25)
+	addi $t2, $t2, -4			# $t2 = [128 * rand(21, 25) - 4] (To start at right side of the screen)
+	
+	li $t8, BASE_ADDRESS			# $t8 stores the right side of the medium platform
+	add $t8, $t8, $t2
 	
 	# Draw Title #
 	
@@ -189,9 +206,9 @@ main:	# Alright, let's get this thing going! #
 key_loop:	
 	addi $s6, $s6, 1	# Adds +1 to player score
 	# Take user input continually #
-	li $t7, 0xffff0000 
-	lw $t8, 0($t7)
-	beq $t8, 1, keypress_happened
+	li $t2, 0xffff0000 
+	lw $t1, 0($t2)
+	beq $t1, 1, keypress_happened
 	
 cont:	
 	jal draw_plyr
@@ -199,9 +216,9 @@ cont:
 	jal draw_rand_plat
 
 	li $v0, 32 				# Sleep for 0.05secs (Lower for harder difficulty)
-	li $t5, 50				# Get delay rate
+	li $t0, 50				# Get delay rate
 	li $a0, 50				# Base difficulty is at 0.05secs delay
-	sub $a0, $a0, $t5
+	sub $a0, $a0, $t0
 	syscall
 	# jal check_collision
 	# jal clear_objs
@@ -220,13 +237,13 @@ cont:
 	
 keypress_happened:
 	li $t0, 0xffff0000	#
-	lw $t8, 4($t0) 		# Load which key was pressed
+	lw $t1, 4($t0) 		# Load which key was pressed
 
-	beq $t8, 0x77, respondW
-	beq $t8, 0x61, respondA
-	# beq $t8, 0x73, respondS
-	beq $t8, 0x64, respondD
-	beq $t8, 0x70, respondP
+	beq $t1, 0x77, respondW
+	beq $t1, 0x61, respondA
+	# beq $t1, 0x73, respondS
+	beq $t1, 0x64, respondD
+	beq $t1, 0x70, respondP
 	
 clear_objs:	# Call each obj clear function (only use on GameOver) #
 	move $s7, $ra
@@ -391,19 +408,59 @@ draw_init_plat:
 	jr $ra
 	
 draw_rand_plat:
-	sw $s4, 0($t9)
-	sw $s4, -4($t9)
-	sw $s4, -8($t9)
-	sw $s4, -12($t9)
-	sw $s4, -16($t9)
-	sw $s4, -20($t9)
-	sw $s4, -24($t9)
-	sw $s4, -28($t9)
-	sw $s4, -32($t9)
-	sw $s4, -36($t9)
-	sw $s4, -40($t9)
+	# Draw small platform #
+	sw $s4, 0($t7)
+	sw $s4, -4($t7)
+	sw $s4, -8($t7)
+	sw $s4, -12($t7)
+	sw $s4, -16($t7)
+	sw $s4, -20($t7)
+	sw $s4, -24($t7)
+	sw $s4, -28($t7)
+	sw $s4, -32($t7)
+	sw $s4, -36($t7)
+	sw $s4, -40($t7)
 	
-	jr $ra	
+	# Draw medium platform #
+	sw $s4, 0($t8)
+	sw $s4, -4($t8)
+	sw $s4, -8($t8)
+	sw $s4, -12($t8)
+	sw $s4, -16($t8)
+	sw $s4, -20($t8)
+	sw $s4, -24($t8)
+	sw $s4, -28($t8)
+	sw $s4, -32($t8)
+	sw $s4, -36($t8)
+	sw $s4, -40($t8)
+	
+	jr $ra
+	
+move_platform:
+	# Move platforms to the right #
+	addi $t7, $t7, -4 
+
+	# check if small asteroid is out of bounds
+	li $t1, 128
+	div $t7, $t1
+	mfhi $t0
+	# bgtz $t0, next_ast_1
+	
+	# if small asteroid is out of bounds get new starting location for it
+	li $v0, 42				# get a random number between 0 and 28
+	li $a0, 0
+	li $a1, 28
+	syscall
+	
+	addi $a0, $a0, 3			# get the starting address of a small asteroid
+	mult $t1, $a0
+	mflo $t2
+	addi $t2, $t2, -8
+	
+	li $t7, BASE_ADDRESS			# $s6 stores the center of a small asteroid
+	add $t7, $t7, $t2
+	## Make a medium and high platform too! (Not working yet!!!) ##
+	
 	
 
 gravity_tick: # Applies 1 "unit" of gravity to player, if not standing on platform #
@@ -512,12 +569,12 @@ respondA:	# Move Left #
 	addi $s1, $s1, -4
 	
 	# Check if player is on same row #
-	li $t5, 128			 # $t5 = sizeof(row)
+	li $t0, 128			 # $t0 = sizeof(row)
 	addi $t6, $s1, -24		 # $t6 = cur_pos (of left edge)
-	div $t6, $t5			 # Get cur_pos / sizeof(row)
-	mflo $t7			 # $t7 = cur_pos / sizeof(row)
-	div $s1, $t5			 # Get next_pos / sizeof(row)
-	mflo $t8			 # $t8 = next_pos / sizeof(row)
+	div $t6, $t0			 # Get cur_pos / sizeof(row)
+	mflo $t2			 # $t2 = cur_pos / sizeof(row)
+	div $s1, $t0			 # Get next_pos / sizeof(row)
+	mflo $t1			 # $t1 = next_pos / sizeof(row)
 	
 	# Clear right column of player (May delete other objs on other side of screen) #
 	sw $zero, 4($s1)
@@ -528,7 +585,7 @@ respondA:	# Move Left #
 	sw $zero, -636($s1)
 	sw $zero, -764($s1)
 	
-	beq $t7, $t8, cont		 # If plyr still on same row, no need to revert!
+	beq $t2, $t1, cont		 # If plyr still on same row, no need to revert!
 	addi $s1, $s1, 4		 # Revert movement
 	j cont
 
@@ -539,12 +596,12 @@ respondD:	# Move Right #
 	addi $s1, $s1, 4
 	
 	# Check if player is on same row #
-	li $t5, 128			 # $t5 = sizeof(row)
+	li $t0, 128			 # $t0 = sizeof(row)
 	addi $t6, $s1, -4		 # $t6 = cur_pos (of right edge)
-	div $t6, $t5			 # Get cur_pos / sizeof(row)
-	mflo $t7			 # $t7 = cur_pos / sizeof(row)
-	div $s1, $t5			 # Get next_pos / sizeof(row)
-	mflo $t8			 # $t8 = next_pos / sizeof(row)
+	div $t6, $t0			 # Get cur_pos / sizeof(row)
+	mflo $t2			 # $t2 = cur_pos / sizeof(row)
+	div $s1, $t0			 # Get next_pos / sizeof(row)
+	mflo $t1			 # $t1 = next_pos / sizeof(row)
 	
 	# Clear left column of player (May delete other objs on other side of screen) #
 	sw $zero, -28($s1)
@@ -555,7 +612,7 @@ respondD:	# Move Right #
 	sw $zero, -668($s1)
 	sw $zero, -796($s1)
 	
-	beq $t7, $t8, cont		# If plyr still on same row, no need to revert!
+	beq $t2, $t1, cont		# If plyr still on same row, no need to revert!
 	addi $s1, $s1, -4		# Revert movement
 	j cont
 
