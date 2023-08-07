@@ -18,9 +18,12 @@
 #
 # Which approved features have been implemented for milestone 3?
 # (See the assignment handout for the list of additional features)
-# 1. Platforms change color with every jump! (Randomly, based on colors in a fixed array, RAND_COLOR)
-# 2. Player score (Increases with time and heavily increases with amt of coins earned)
-# 3. Arcade-Style UI
+# 1. Platforms change color with every jump! (Randomly, based on colors in a fixed array, RAND_COLOR)	[Gimmick : +2pts]
+# 2. Player score (Increases with time and heavily increases with amt of coins earned)			[Score : +2pts]
+# 3. Arcade-Style UI											[Menu : +3pts]
+# 4. Moving Platforms											[Moving plats: +2pts]
+# 5. Moving Spikes (Spikes aren't directly tied to platforms)						[Moving Objects: +2pts]
+# 6. Spikes or falling too low lead to a Game Over screen						[Fail Condition : +1pt]
 # ... (add more if necessary)
 #
 # Link to video demonstration for final submission:
@@ -33,14 +36,17 @@
 # - (write here, if any)
 #
 ##################################################################### 
-.eqv	BASE_ADDRESS	0x10008000	
+.eqv	BASE_ADDRESS	0x10008000
+.eqv	DEATH_PLANE	0X10008F80	
 .eqv	WAIT_TIME	40		# Refresh Rate (Increase/Decrease when debugging)
 
 .eqv	BODY_COLOR	0x00ff00	# Yellow. Changeable (Maybe from UI)
 .eqv	FACE_COLOR	0xff0000	# Red. Changeable (Maybe from UI)
 .eqv	PLAT_COLOR	0xffffff	# White. Changeable. (Maybe on every jump? That'd be pretty cool!)
 .eqv	COIN_COLOR	0xffff00	# Yellow. Static.
+.eqv	SPIK_COLOR	0xc0c0c0	# Silver. Static.
 .eqv	BRp		0x10008e18	# Location of the bottom-right pixel of player character
+.eqv 	SPIKEp		0x10008e28	# Spike pixel
 
 .data	
 RAND_COLOR_LEN:	.word	8		# Length of RAND_COLOR arr, increase w/ new color additions
@@ -50,7 +56,7 @@ RAND_COLOR:	.word		0xff0000, 0xff8000, 0x00ff00, 0x0000ff, 0x00ffff, 0xff00ff, 0
 .text
 .globl main
 
-# Note to Self: $s0-$s7 && $t7-$t9 are RESERVED (Update this if needed) #
+# Note to Self: $s0-$s7 && $t5-$t9 are RESERVED (Update this if needed) #
 
 main:	# Alright, let's get this thing going! #
 	li $s0, BASE_ADDRESS	# $s0 stores the base address for display
@@ -60,6 +66,8 @@ main:	# Alright, let's get this thing going! #
 	li $s4, PLAT_COLOR	# $s4 stores the PLAT_COLOR
 	li $s5, COIN_COLOR	# $s5 stores the COIN_COLOR
 	li $s6, 0		# $s6 stores the initial player score (Increases w/ time and coins)
+	li $t5, SPIK_COLOR	# $t5 stores the SPIK_COLOR
+	li $t6, SPIKEp		# $t6 stores the spike pixel
 	
 	# Initial position of low platform #
 	# Get a random number b/w 0 and 4 #
@@ -111,6 +119,43 @@ main:	# Alright, let's get this thing going! #
 	
 	li $t9, BASE_ADDRESS			# $t9 stores the right side of the medium platform
 	add $t9, $t9, $t2
+	
+	# Get a random number b/w 0 and 4 #
+	li $v0, 42				
+	li $a0, 0
+	li $a1, 4
+	syscall					# $a0 = rand(0, 4)
+	move $t4, $a0				# Store which platform has the spike in $t4
+	
+	beq $t4, 1, INIT_MED_SPIKE_CHOSEN
+	beq $t4, 2, INIT_HIGH_SPIKE_CHOSEN
+	
+	# LOW_PLAT will receive the spike #
+	addi $t6, $t7, -148
+	sw $t5, 0($t6)
+	sw $t5, -4($t6)
+	sw $t5, 4($t6)
+	sw $t5, -128($t6)
+	j SPIK_CHOSEN
+	
+INIT_MED_SPIKE_CHOSEN:	
+	# MED_PLAT will receive the spike #
+	addi $t6, $t8, -148
+	sw $t5, 0($t6)
+	sw $t5, -4($t6)
+	sw $t5, 4($t6)
+	sw $t5, -128($t6)
+	j SPIK_CHOSEN
+
+INIT_HIGH_SPIKE_CHOSEN:	
+	# HIGH_PLAT will receive the spike #
+	addi $t6, $t9, -148
+	sw $t5, 0($t6)
+	sw $t5, -4($t6)
+	sw $t5, 4($t6)
+	sw $t5, -128($t6)
+	
+SPIK_CHOSEN:	# The platform w/ the spike has been decided! Let's move on! #
 	
 	# Draw Title #
 	
@@ -231,26 +276,28 @@ cont:
 	jal draw_plyr
 	jal draw_init_plat
 	jal draw_rand_plat
+	jal draw_spike
 	
+	# Get rand(0, 2)
+	li $v0, 42		# 0 => spike on low_plat
+	li $a0, 0		# 1 => spike on med_plat
+	li $a1, 2		# 2 => spike on high_plat
+	syscall
+	move $t4, $a0		# Store which plat will have the spike in $t4		
 
 	li $v0, 32 				# Sleep for 0.05secs (Lower for harder difficulty)
 	li $t0, 50				# Get delay rate
 	li $a0, 50				# Base difficulty is at 0.05secs delay
 	sub $a0, $a0, $t0
 	syscall
-	# jal check_collision
+	jal check_collision
 	# jal clear_objs
 	jal gravity_tick
 	jal move_platform
-
-	# Deletes the line above the player (Experimental!) #	
-	sw $zero, -896($s1)
-	sw $zero, -900($s1)
-	sw $zero, -904($s1)
-	sw $zero, -908($s1)
-	sw $zero, -912($s1)
-	sw $zero, -916($s1)
-	sw $zero, -920($s1)
+	jal move_spike
+	
+SPIK_MV_FINISH:
+	jal clear_plyr_top
 	
 	j key_loop
 	
@@ -342,6 +389,18 @@ clear_plyr:	# Clears all player pixels #
 	sw $zero, -792($s1)	#
 	
 	jr $ra			#
+	
+clear_plyr_top:
+	# Deletes the line above the player (Experimental!) #	
+	sw $zero, -896($s1)
+	sw $zero, -900($s1)
+	sw $zero, -904($s1)
+	sw $zero, -908($s1)
+	sw $zero, -912($s1)
+	sw $zero, -916($s1)
+	sw $zero, -920($s1)
+	
+	jr $ra
 	
 draw_plyr:	
 	# Draw player character #
@@ -468,6 +527,82 @@ draw_rand_plat:
 	
 	jr $ra
 	
+draw_spike:
+	sw $t5, 0($t6)
+	sw $t5, -4($t6)
+	sw $t5, 4($t6)
+	sw $t5, -128($t6)
+	
+	jr $ra
+	
+check_collision:
+	# Check1: If player is touching the bottom of the screen, pause for a bit, then send to Game Over #
+	# Check2: If player is touching a spike, pause for a bit, then send to Game Over #
+	
+	# Check1 #
+	li $t0, DEATH_PLANE
+	addi $t1, $s1, -24		# $t1 = BLp (Bottom-left pixel of player)
+	bge $t1, $t0, GameOver		# If BLp >= DEATH_PLANE, then send to GameOver
+	
+	# Check2 #
+	# Check bottom line of player for SPIK_COLOR #
+	lw $t0, 0($s1)
+	beq $t0, SPIK_COLOR, GameOver 
+	lw $t0, -4($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -8($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -12($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -16($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -20($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -24($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	
+	# Check right line of player for SPIK_COLOR #
+	lw $t0, -128($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -256($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -384($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -512($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -640($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -768($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	
+	# Check top line of player for SPIK_COLOR #
+	lw $t0, -772($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -776($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -780($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -784($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -788($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -792($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	
+	# Check left line of player for SPIK_COLOR #
+	lw $t0, -152($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -280($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -408($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -536($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	lw $t0, -664($s1)
+	beq $t0, SPIK_COLOR, GameOver
+	
+	jr $ra
+	
 move_platform:
 	# Move platforms to the right #
 	addi $t7, $t7, -4 
@@ -483,9 +618,8 @@ move_platform:
 	mflo $t1			 # $t1 = next_pos / sizeof(row)
 	
 	# Clear right column of player (May delete other objs on other side of screen) #
-	sw $zero, 4($t7)	# Delete trailing pixel
-	
-	beq $t2, $t1, mvMedPlat		 # If platform still on same row, no need to revert!
+	sw $zero, 4($t7)		# Delete trailing pixel
+	beq $t2, $t1, mvMedPlat		# If platform still on same row, no need to revert!
 	
 	sw $zero, 0($t7)
 	sw $zero, -4($t7)
@@ -594,7 +728,66 @@ mvHighPlat:
 mvPlatEnd:
 	jr $ra		# Done updating platforms!
 	
+move_spike:
+	addi $t6, $t6, -4
 	
+	# Check if platform is on same row #
+	li $t0, 128			# $t0 = sizeof(row)
+	addi $t1, $t6, -20		# $t1 = cur_pos (of left edge) (Was -40)
+	div $t1, $t0			# Get cur_pos / sizeof(row)
+	mflo $t2			# $t2 = cur_pos / sizeof(row)
+	div $t6, $t0			# Get next_pos / sizeof(row)
+	mflo $t1			# $t1 = next_pos / sizeof(row)
+	
+	sw $zero, -124($t6)		# Rm traling pixel
+	sw $zero, 8($t6)		# Rm traling pixel
+	
+	beq $t2, $t1, SPIK_MV_FINISH
+	
+	# Erase spike #
+	sw $zero, 0($t6)
+	sw $zero, -4($t6)
+	sw $zero, 4($t6)
+	sw $zero, -128($t6)
+	
+	# Get new position for spike #
+	# Get a random number b/w 0 and 4 #
+	li $v0, 42				
+	li $a0, 0
+	li $a1, 4
+	syscall					# $a0 = rand(0, 4)
+	move $t4, $a0				# Store which platform has the spike in $t4
+	
+	beq $t4, 1, MED_SPIKE_CHOSEN
+	beq $t4, 2, HIGH_SPIKE_CHOSEN
+	
+	# LOW_PLAT will receive the spike #
+	addi $t6, $t7, -148
+	sw $t5, 0($t6)
+	sw $t5, -4($t6)
+	sw $t5, 4($t6)
+	sw $t5, -128($t6)
+	j SPIKE_CHOSEN
+	
+MED_SPIKE_CHOSEN:	
+	# MED_PLAT will receive the spike #
+	addi $t6, $t8, -148
+	sw $t5, 0($t6)
+	sw $t5, -4($t6)
+	sw $t5, 4($t6)
+	sw $t5, -128($t6)
+	j SPIK_CHOSEN
+
+HIGH_SPIKE_CHOSEN:	
+	# HIGH_PLAT will receive the spike #
+	addi $t6, $t9, -148
+	sw $t5, 0($t6)
+	sw $t5, -4($t6)
+	sw $t5, 4($t6)
+	sw $t5, -128($t6)
+	
+SPIKE_CHOSEN:	# The platform w/ the spike has been decided! Let's move on! #
+	jr $ra
 
 gravity_tick: # Applies 1 "unit" of gravity to player, if not standing on platform #
 	# If any of the pixels below the player are platforms, then ignore gravity #
@@ -611,8 +804,7 @@ gravity_tick: # Applies 1 "unit" of gravity to player, if not standing on platfo
 	lw $t0, 108($s1)
 	beq $t0, $s4, key_loop
 	lw $t0, 104($s1)
-	beq $t0, $s4, key_loop
-	
+	beq $t0, $s4, key_loop	
 	
 	addi $s1, $s1, 128	# Going down!
 	
@@ -703,8 +895,8 @@ respondA:	# Move Left #
 	
 	# Check if player is on same row #
 	li $t0, 128			 # $t0 = sizeof(row)
-	addi $t6, $s1, -24		 # $t6 = cur_pos (of left edge)
-	div $t6, $t0			 # Get cur_pos / sizeof(row)
+	addi $t1, $s1, -24		 # $t1 = cur_pos (of left edge)
+	div $t1, $t0			 # Get cur_pos / sizeof(row)
 	mflo $t2			 # $t2 = cur_pos / sizeof(row)
 	div $s1, $t0			 # Get next_pos / sizeof(row)
 	mflo $t1			 # $t1 = next_pos / sizeof(row)
@@ -730,8 +922,8 @@ respondD:	# Move Right #
 	
 	# Check if player is on same row #
 	li $t0, 128			 # $t0 = sizeof(row)
-	addi $t6, $s1, -4		 # $t6 = cur_pos (of right edge)
-	div $t6, $t0			 # Get cur_pos / sizeof(row)
+	addi $t1, $s1, -4		 # $t1 = cur_pos (of right edge)
+	div $t1, $t0			 # Get cur_pos / sizeof(row)
 	mflo $t2			 # $t2 = cur_pos / sizeof(row)
 	div $s1, $t0			 # Get next_pos / sizeof(row)
 	mflo $t1			 # $t1 = next_pos / sizeof(row)
@@ -753,6 +945,241 @@ respondP:	# Restart Game #
 	jal clear_screen
 	j main
 	
+GameOver:
+	jal clear_screen
+	li $t0, BASE_ADDRESS
+	sw $zero, 0($t0)
+	
+	li $t1, 0xff0000			# store the red color code in $t1
+	
+	sw $t1, 272($t0)			# paint the letter G
+	sw $t1, 400($t0)
+	sw $t1, 528($t0)
+	sw $t1, 656($t0)
+	sw $t1, 784($t0)
+	sw $t1, 912($t0)
+	sw $t1, 1040($t0)
+	sw $t1, 1168($t0)
+	
+	sw $t1, 1172($t0)
+	sw $t1, 1176($t0)
+	sw $t1, 1180($t0)
+	sw $t1, 1184($t0)
+	
+	sw $t1, 1056($t0)
+	sw $t1, 928($t0)
+	sw $t1, 800($t0)
+	sw $t1, 672($t0)
+	
+	sw $t1, 668($t0)
+	sw $t1, 664($t0)
+	
+	sw $t1, 276($t0)
+	sw $t1, 280($t0)
+	sw $t1, 284($t0)
+	sw $t1, 288($t0)
+	
+	sw $t1, 300($t0)			# paint the letter A
+	sw $t1, 304($t0)
+	sw $t1, 308($t0)
+	
+	sw $t1, 812($t0)
+	sw $t1, 816($t0)
+	sw $t1, 820($t0)
+	
+	sw $t1, 424($t0)
+	sw $t1, 552($t0)
+	sw $t1, 680($t0)
+	sw $t1, 808($t0)
+	sw $t1, 936($t0)
+	sw $t1, 1064($t0)
+	sw $t1, 1192($t0)
+	
+	sw $t1, 440($t0)
+	sw $t1, 568($t0)
+	sw $t1, 696($t0)
+	sw $t1, 824($t0)
+	sw $t1, 952($t0)
+	sw $t1, 1080($t0)
+	sw $t1, 1208($t0)
+	
+	
+	
+	sw $t1, 320($t0)			# paint the letter M
+	sw $t1, 448($t0)
+	sw $t1, 576($t0)
+	sw $t1, 704($t0)
+	sw $t1, 832($t0)
+	sw $t1, 960($t0)
+	sw $t1, 1088($t0)
+	sw $t1, 1216($t0)
+	
+	sw $t1, 336($t0)
+	sw $t1, 464($t0)
+	sw $t1, 592($t0)
+	sw $t1, 720($t0)
+	sw $t1, 848($t0)
+	sw $t1, 976($t0)
+	sw $t1, 1104($t0)
+	sw $t1, 1232($t0)
+	
+	sw $t1, 452($t0)
+	sw $t1, 460($t0)
+	
+	sw $t1, 584($t0)
+	sw $t1, 712($t0)
+	
+	
+	sw $t1, 344($t0)			# paint the letter E
+	sw $t1, 472($t0)
+	sw $t1, 600($t0)
+	sw $t1, 728($t0)
+	sw $t1, 856($t0)
+	sw $t1, 984($t0)
+	sw $t1, 1112($t0)
+	sw $t1, 1240($t0)
+	
+	sw $t1, 348($t0)
+	sw $t1, 352($t0)
+	sw $t1, 356($t0)
+	sw $t1, 360($t0)
+	
+	sw $t1, 732($t0)
+	sw $t1, 736($t0)
+	sw $t1, 740($t0)
+	
+	sw $t1, 1244($t0)
+	sw $t1, 1248($t0)
+	sw $t1, 1252($t0)
+	sw $t1, 1256($t0)
+	
+	
+	sw $t1, 1928($t0)			# paint the letter O
+	sw $t1, 2056($t0)
+	sw $t1, 2184($t0)
+	sw $t1, 2312($t0)
+	sw $t1, 2440($t0)
+	sw $t1, 2568($t0)
+	sw $t1, 2696($t0)
+	sw $t1, 2824($t0)
+	sw $t1, 2952($t0)
+	
+	sw $t1, 1932($t0)
+	sw $t1, 1936($t0)
+	sw $t1, 1940($t0)
+	sw $t1, 1944($t0)
+	
+	sw $t1, 1948($t0)
+	sw $t1, 2076($t0)
+	sw $t1, 2204($t0)
+	sw $t1, 2332($t0)
+	sw $t1, 2460($t0)
+	sw $t1, 2588($t0)
+	sw $t1, 2716($t0)
+	sw $t1, 2844($t0)
+	sw $t1, 2972($t0)
+	
+	sw $t1, 2956($t0)
+	sw $t1, 2960($t0)
+	sw $t1, 2964($t0)
+	sw $t1, 2968($t0)
+	
+	
+	
+	sw $t1, 1956($t0)			# paint the letter V
+	sw $t1, 2084($t0)
+	sw $t1, 2212($t0)
+	sw $t1, 2340($t0)
+	sw $t1, 2468($t0)
+	
+	sw $t1, 1976($t0)
+	sw $t1, 2104($t0)
+	sw $t1, 2232($t0)
+	sw $t1, 2360($t0)
+	sw $t1, 2488($t0)
+	
+	sw $t1, 2600($t0)
+	sw $t1, 2728($t0)
+	
+	sw $t1, 2612($t0)
+	sw $t1, 2740($t0)
+	
+	sw $t1, 2860($t0)
+	sw $t1, 2864($t0)
+	sw $t1, 2988($t0)
+	sw $t1, 2992($t0)
+	
+	
+
+	sw $t1, 1984($t0)			# paint the letter E
+	sw $t1, 2112($t0)
+	sw $t1, 2240($t0)
+	sw $t1, 2368($t0)
+	sw $t1, 2496($t0)
+	sw $t1, 2624($t0)
+	sw $t1, 2752($t0)
+	sw $t1, 2880($t0)
+	sw $t1, 3008($t0)
+	
+	sw $t1, 1988($t0)
+	sw $t1, 1992($t0)
+	sw $t1, 1996($t0)
+	sw $t1, 2000($t0)
+	sw $t1, 2004($t0)
+	
+	sw $t1, 2500($t0)
+	sw $t1, 2504($t0)
+	sw $t1, 2508($t0)
+	
+	sw $t1, 3012($t0)
+	sw $t1, 3016($t0)
+	sw $t1, 3020($t0)
+	sw $t1, 3024($t0)
+	sw $t1, 3028($t0)
+	
+	
+	sw $t1, 2012($t0)			# paint the letter R
+	sw $t1, 2140($t0)
+	sw $t1, 2268($t0)
+	sw $t1, 2396($t0)
+	sw $t1, 2524($t0)
+	sw $t1, 2652($t0)
+	sw $t1, 2780($t0)
+	sw $t1, 2908($t0)
+	sw $t1, 3036($t0)
+	
+	sw $t1, 2016($t0)
+	sw $t1, 2020($t0)
+	sw $t1, 2024($t0)
+	sw $t1, 2028($t0)
+
+	sw $t1, 2528($t0)
+	sw $t1, 2532($t0)
+	sw $t1, 2536($t0)
+	sw $t1, 2540($t0)
+	
+	sw $t1, 2160($t0)
+	sw $t1, 2288($t0)
+	sw $t1, 2416($t0)
+	
+	sw $t1, 2672($t0)
+	sw $t1, 2800($t0)
+	sw $t1, 2928($t0)
+	sw $t1, 3056($t0)
+	
+end_loop:
+	add $t8, $zero, $zero			# Reset user input register
+	# takes in user input
+	li $t9, 0xffff0000 
+	lw $t8, 0($t9)
+	beq $t8, 0, no_reset
+	lw $t8, 4($t9) 
+	beq $t8, 0x70, respondP			
+no_reset:
+	li $v0, 32 				# sleep for 100ms
+	li $a0, 100
+	syscall
+	j end_loop
 
 EXIT:	# The player has selected to exit the game! Show their final score! #
 	li $v0, 10
