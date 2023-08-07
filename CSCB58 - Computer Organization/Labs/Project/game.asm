@@ -79,7 +79,7 @@ main:	# Alright, let's get this thing going! #
 	add $t7, $t7, $t2
 	
 	# Initial position of medium platform #
-	# Get a random number b/w 0 and 9 #
+	# Get a random number b/w 0 and 4 #
 	li $v0, 42				
 	li $a0, 0
 	li $a1, 4
@@ -94,6 +94,23 @@ main:	# Alright, let's get this thing going! #
 	
 	li $t8, BASE_ADDRESS			# $t8 stores the right side of the medium platform
 	add $t8, $t8, $t2
+	
+	# Initial position of high platform #
+	# Get a random number b/w 0 and 4 #
+	li $v0, 42				
+	li $a0, 0
+	li $a1, 4
+	syscall					# $a0 = rand(0, 4)
+	
+	# Get start addr of platform (max_height = 32 - 16 = 16) #
+	addi $a0, $a0, 16			# $a0 = rand(16, 20)	
+	li $t1, 128				# $t1 = 128
+	mult $t1, $a0				# Get 128 * rand(16, 20)
+	mflo $t2				# $t2 = 128 * rand(16, 20)
+	addi $t2, $t2, -4			# $t2 = [128 * rand(16, 20) - 4] (To start at right side of the screen)
+	
+	li $t9, BASE_ADDRESS			# $t9 stores the right side of the medium platform
+	add $t9, $t9, $t2
 	
 	# Draw Title #
 	
@@ -214,6 +231,7 @@ cont:
 	jal draw_plyr
 	jal draw_init_plat
 	jal draw_rand_plat
+	
 
 	li $v0, 32 				# Sleep for 0.05secs (Lower for harder difficulty)
 	li $t0, 50				# Get delay rate
@@ -223,6 +241,7 @@ cont:
 	# jal check_collision
 	# jal clear_objs
 	jal gravity_tick
+	jal move_platform
 
 	# Deletes the line above the player (Experimental!) #	
 	sw $zero, -896($s1)
@@ -434,32 +453,146 @@ draw_rand_plat:
 	sw $s4, -36($t8)
 	sw $s4, -40($t8)
 	
+	# Draw high platform #
+	sw $s4, 0($t9)
+	sw $s4, -4($t9)
+	sw $s4, -8($t9)
+	sw $s4, -12($t9)
+	sw $s4, -16($t9)
+	sw $s4, -20($t9)
+	sw $s4, -24($t9)
+	sw $s4, -28($t9)
+	sw $s4, -32($t9)
+	sw $s4, -36($t9)
+	sw $s4, -40($t9)
+	
 	jr $ra
 	
 move_platform:
 	# Move platforms to the right #
 	addi $t7, $t7, -4 
-
-	# check if small asteroid is out of bounds
-	li $t1, 128
-	div $t7, $t1
-	mfhi $t0
-	# bgtz $t0, next_ast_1
+	addi $t8, $t8, -4
+	addi $t9, $t9, -4
 	
-	# if small asteroid is out of bounds get new starting location for it
-	li $v0, 42				# get a random number between 0 and 28
+	# Check if platform is on same row #
+	li $t0, 128			 # $t0 = sizeof(row)
+	addi $t1, $t7, -40		 # $t1 = cur_pos (of left edge) (Was -24)
+	div $t1, $t0			 # Get cur_pos / sizeof(row)
+	mflo $t2			 # $t2 = cur_pos / sizeof(row)
+	div $t7, $t0			 # Get next_pos / sizeof(row)
+	mflo $t1			 # $t1 = next_pos / sizeof(row)
+	
+	# Clear right column of player (May delete other objs on other side of screen) #
+	sw $zero, 4($t7)	# Delete trailing pixel
+	
+	beq $t2, $t1, mvMedPlat		 # If platform still on same row, no need to revert!
+	
+	sw $zero, 0($t7)
+	sw $zero, -4($t7)
+	sw $zero, -8($t7)
+	sw $zero, -12($t7)
+	sw $zero, -16($t7)
+	sw $zero, -20($t7)
+	sw $zero, -24($t7)
+	sw $zero, -28($t7)
+	sw $zero, -32($t7)
+	sw $zero, -36($t7)
+	
+	# If low platform is OoB, then get a new starting location for it #
+	li $v0, 42				
 	li $a0, 0
-	li $a1, 28
-	syscall
+	li $a1, 4
+	syscall					# $a0 = rand(0, 4)
 	
-	addi $a0, $a0, 3			# get the starting address of a small asteroid
-	mult $t1, $a0
-	mflo $t2
-	addi $t2, $t2, -8
+	# Get start addr of low platform (max_height = 32 - 26 = 6) #
+	addi $a0, $a0, 26			# $a0 = rand(26, 30)	
+	li $t1, 128				# $t1 = 128
+	mult $t1, $a0				# Get 128 * rand(26, 30)
+	mflo $t2				# $t2 = 128 * rand(26, 30)
+	addi $t2, $t2, -4			# $t2 = [128 * rand(26, 30) - 4] (To start at right side of the screen)
 	
-	li $t7, BASE_ADDRESS			# $s6 stores the center of a small asteroid
+	li $t7, BASE_ADDRESS			# $t7 stores the right side of the platform
 	add $t7, $t7, $t2
-	## Make a medium and high platform too! (Not working yet!!!) ##
+	
+mvMedPlat:
+	# Check if platform is on same row #
+	li $t0, 128			 # $t0 = sizeof(row)
+	addi $t1, $t8, -40		 # $t1 = cur_pos (of left edge) (Was -24)
+	div $t1, $t0			 # Get cur_pos / sizeof(row)
+	mflo $t2			 # $t2 = cur_pos / sizeof(row)
+	div $t8, $t0			 # Get next_pos / sizeof(row)
+	mflo $t1			 # $t1 = next_pos / sizeof(row)
+	
+	sw $zero, 4($t8)		# Delete trailing pixel
+	beq $t2, $t1, mvHighPlat	# If platform still on same row, no need to revert!
+	
+	sw $zero, 0($t8)
+	sw $zero, -4($t8)
+	sw $zero, -8($t8)
+	sw $zero, -12($t8)
+	sw $zero, -16($t8)
+	sw $zero, -20($t8)
+	sw $zero, -24($t8)
+	sw $zero, -28($t8)
+	sw $zero, -32($t8)
+	sw $zero, -36($t8)
+	
+	# If medium platform is OoB, then get a new starting location for it #
+	li $v0, 42				
+	li $a0, 0
+	li $a1, 4
+	syscall					# $a0 = rand(0, 4)
+	
+	# Get start addr of platform (max_height = 32 - 21 = 9) #
+	addi $a0, $a0, 21			# $a0 = rand(21, 25)	
+	li $t1, 128				# $t1 = 128
+	mult $t1, $a0				# Get 128 * rand(21, 25)
+	mflo $t2				# $t2 = 128 * rand(21, 25)
+	addi $t2, $t2, -4			# $t2 = [128 * rand(21, 25) - 4] (To start at right side of the screen)
+	
+	li $t8, BASE_ADDRESS			# $t8 stores the right side of the medium platform
+	add $t8, $t8, $t2
+	
+mvHighPlat:
+	# Check if platform is on same row #
+	li $t0, 128			 # $t0 = sizeof(row)
+	addi $t1, $t9, -40		 # $t1 = cur_pos (of left edge) (Was -24)
+	div $t1, $t0			 # Get cur_pos / sizeof(row)
+	mflo $t2			 # $t2 = cur_pos / sizeof(row)
+	div $t9, $t0			 # Get next_pos / sizeof(row)
+	mflo $t1			 # $t1 = next_pos / sizeof(row)
+	
+	sw $zero, 4($t9)		# Delete trailing pixel
+	beq $t2, $t1, mvPlatEnd		# If platform still on same row, no need to revert!
+	
+	sw $zero, 0($t9)
+	sw $zero, -4($t9)
+	sw $zero, -8($t9)
+	sw $zero, -12($t9)
+	sw $zero, -16($t9)
+	sw $zero, -20($t9)
+	sw $zero, -24($t9)
+	sw $zero, -28($t9)
+	sw $zero, -32($t9)
+	sw $zero, -36($t9)
+	
+	li $v0, 42				
+	li $a0, 0
+	li $a1, 4
+	syscall					# $a0 = rand(0, 4)
+	
+	# Get start addr of platform (max_height = 32 - 16 = 16) #
+	addi $a0, $a0, 16			# $a0 = rand(16, 20)	
+	li $t1, 128				# $t1 = 128
+	mult $t1, $a0				# Get 128 * rand(16, 20)
+	mflo $t2				# $t2 = 128 * rand(16, 20)
+	addi $t2, $t2, -4			# $t2 = [128 * rand(16, 20) - 4] (To start at right side of the screen)
+	
+	li $t9, BASE_ADDRESS			# $t9 stores the right side of the medium platform
+	add $t9, $t9, $t2
+	
+mvPlatEnd:
+	jr $ra		# Done updating platforms!
 	
 	
 
