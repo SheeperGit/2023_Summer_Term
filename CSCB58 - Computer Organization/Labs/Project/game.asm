@@ -21,7 +21,7 @@
 # (See the assignment handout for the list of additional features)
 # 1. Platforms change color with every jump! (Randomly, based on colors in a fixed array, RAND_COLOR)	[Gimmick : +2pts]
 # 2. Player score (Increases with time and heavily increases with amt of coins earned)			[Score : +2pts]
-# 3. Animated Walking (Jump-Only, since this is just for jumping +2pts seems like too much...)		[Animation : +1pt]									[Animation: +1pt]
+# 3. Animated Walking (Jump-Only, since this is just for jumping +2pts seems like too much...)		[Animation : +1pt]
 # 4. Moving Platforms											[Moving plats: +2pts]
 # 5. Moving Spikes (Spikes aren't directly tied to platforms)						[Moving Objects: +2pts]
 # 6. Spikes or falling too low lead to a Game Over screen...						[Fail Condition : +1pt]
@@ -30,9 +30,11 @@
 #
 # Link to video demonstration for final submission:
 # - (insert YouTube / MyMedia / other URL here). Make sure we can view it!
+# https://play.library.utoronto.ca/watch/fc76f302fdaf6c0334b951de92c17b69
 #
 # Are you OK with us sharing the video with people outside course staff?
 # - yes, and please share this project github link as well!
+# https://github.com/SheeperGit/2023_Summer_Term/tree/master/CSCB58%20-%20Computer%20Organization/Labs/Project
 #
 # Any additional information that the TA needs to know:
 # I chose to have my resolution be 32x32 since my game doesn't need the extra room. 
@@ -44,7 +46,7 @@
 .eqv	DEATH_PLANE	0X10008F80	# Effectively refers to the bottom of the screen
 .eqv	WAIT_TIME	40		# Refresh Rate (Increase/Decrease when debugging)
 .eqv	JUMP_HEIGHT	8		# Jump units. Changeable.
-.eqv	TITLE_TIME	100		# How long to gawk at the great time screen before it disappears :)
+.eqv	TITLE_TIME	2000		# How long to gawk at the great title screen before it disappears :)
 
 .eqv	BODY_COLOR	0x00ff00	# Green. Changeable (Maybe from UI)
 .eqv	FACE_COLOR	0xff0000	# Red. Changeable (Maybe from UI)
